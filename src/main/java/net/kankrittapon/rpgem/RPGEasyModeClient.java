@@ -33,12 +33,6 @@ public class RPGEasyModeClient {
     }
 
     @SubscribeEvent
-    public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
-        event.register(net.kankrittapon.rpgem.init.ModMenuTypes.ALCHEMY_TABLE_MENU.get(),
-                net.kankrittapon.rpgem.screen.AlchemyTableScreen::new);
-    }
-
-    @SubscribeEvent
     public static void registerItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
         event.register((stack, tintIndex) -> {
             if (tintIndex == 0) {

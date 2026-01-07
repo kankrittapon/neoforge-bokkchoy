@@ -3,8 +3,6 @@ package net.kankrittapon.rpgem.block;
 import net.kankrittapon.rpgem.block.entity.AlchemyTableBlockEntity;
 import net.kankrittapon.rpgem.init.ModBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -47,18 +45,11 @@ public class AlchemyTableBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, newState, isMoving);
     }
 
+    // GUI Removed
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
             BlockHitResult hitResult) {
-        if (!level.isClientSide()) {
-            BlockEntity entity = level.getBlockEntity(pos);
-            if (entity instanceof AlchemyTableBlockEntity) {
-                ((ServerPlayer) player).openMenu((AlchemyTableBlockEntity) entity, pos);
-            } else {
-                throw new IllegalStateException("Our Container provider is missing!");
-            }
-        }
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.PASS;
     }
 
     @Nullable

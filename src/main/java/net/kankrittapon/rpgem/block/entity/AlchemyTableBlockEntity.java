@@ -2,7 +2,6 @@ package net.kankrittapon.rpgem.block.entity;
 
 import net.kankrittapon.rpgem.init.ModBlockEntities;
 import net.kankrittapon.rpgem.init.ModItems;
-import net.kankrittapon.rpgem.screen.AlchemyTableMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -13,11 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider {
+public class AlchemyTableBlockEntity extends BlockEntity {
     public final ItemStackHandler itemHandler = new ItemStackHandler(5) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -90,17 +85,6 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
             inventory.setItem(i, itemHandler.getStackInSlot(i));
         }
         net.minecraft.world.Containers.dropContents(this.level, this.worldPosition, inventory);
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.literal("Alchemy Table");
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new AlchemyTableMenu(containerId, playerInventory, this, this.data);
     }
 
     @Override
