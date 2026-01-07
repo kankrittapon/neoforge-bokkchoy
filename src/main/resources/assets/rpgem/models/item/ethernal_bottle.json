@@ -1,0 +1,63 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "block/eternal_bottle",
+		"particle": "block/eternal_bottle"
+	},
+	"elements": [
+		{
+			"name": "glass_body",
+			"from": [5, 0, 5],
+			"to": [11, 8, 11],
+			"faces": {
+				"north": {"uv": [0, 0, 3, 4], "texture": "#0"},
+				"east": {"uv": [3, 0, 6, 4], "texture": "#0"},
+				"south": {"uv": [0, 4, 3, 8], "texture": "#0"},
+				"west": {"uv": [3, 4, 6, 8], "texture": "#0"},
+				"up": {"uv": [9, 3, 6, 0], "texture": "#0"},
+				"down": {"uv": [9, 3, 6, 6], "texture": "#0"}
+			}
+		},
+		{
+			"name": "bottle_neck",
+			"from": [6, 8, 6],
+			"to": [10, 9, 10],
+			"faces": {
+				"north": {"uv": [9, 5, 11, 5.5], "texture": "#0"},
+				"east": {"uv": [9, 5.5, 11, 6], "texture": "#0"},
+				"south": {"uv": [10, 1, 12, 1.5], "texture": "#0"},
+				"west": {"uv": [10, 1.5, 12, 2], "texture": "#0"},
+				"up": {"uv": [4.5, 10, 2.5, 8], "texture": "#0"},
+				"down": {"uv": [6.5, 8.5, 4.5, 10.5], "texture": "#0"}
+			}
+		},
+		{
+			"name": "cork",
+			"from": [5.5, 9, 5.5],
+			"to": [10.5, 11, 10.5],
+			"faces": {
+				"north": {"uv": [8.5, 6, 11, 7], "texture": "#0"},
+				"east": {"uv": [6.5, 8.5, 9, 9.5], "texture": "#0"},
+				"south": {"uv": [8.5, 7, 11, 8], "texture": "#0"},
+				"west": {"uv": [9, 0, 11.5, 1], "texture": "#0"},
+				"up": {"uv": [8.5, 8.5, 6, 6], "texture": "#0"},
+				"down": {"uv": [2.5, 8, 0, 10.5], "texture": "#0"}
+			}
+		},
+		{
+			"name": "eternal_flame",
+			"from": [7, 2, 7],
+			"to": [9, 6, 9],
+			"faces": {
+				"north": {"uv": [9, 1, 10, 3], "texture": "#0"},
+				"east": {"uv": [9, 3, 10, 5], "texture": "#0"},
+				"south": {"uv": [9, 8, 10, 10], "texture": "#0"},
+				"west": {"uv": [6.5, 9.5, 7.5, 11.5], "texture": "#0"},
+				"up": {"uv": [8.5, 10.5, 7.5, 9.5], "texture": "#0"},
+				"down": {"uv": [11, 2, 10, 3], "texture": "#0"}
+			}
+		}
+	]
+}
