@@ -1,8 +1,10 @@
 package net.kankrittapon.rpgem;
 
+import net.kankrittapon.rpgem.init.ModBlockEntities;
 import net.kankrittapon.rpgem.init.ModBlocks;
 import net.kankrittapon.rpgem.init.ModCreativeTabs;
 import net.kankrittapon.rpgem.init.ModItems;
+import net.kankrittapon.rpgem.init.ModMenuTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
@@ -32,6 +34,13 @@ public class RPGEasyMode {
         ModItems.register(modEventBus);
         // Register the Deferred Register to the mod event bus so tabs get registered
         ModCreativeTabs.register(modEventBus);
+        // Register the Deferred Register to the mod event bus so block entities get
+        // registered
+        ModBlockEntities.register(modEventBus);
+        // Register the Deferred Register to the mod event bus so menus get registered
+        ModMenuTypes.register(modEventBus);
+        // Register the Deferred Register to the mod event bus so effects get registered
+        net.kankrittapon.rpgem.init.ModMobEffects.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         NeoForge.EVENT_BUS.register(this);

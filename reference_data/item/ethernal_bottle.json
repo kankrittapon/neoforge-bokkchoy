@@ -8,9 +8,9 @@
 	},
 	"elements": [
 		{
-			"name": "glass_body",
+			"name": "glass_base",
 			"from": [5, 0, 5],
-			"to": [11, 8, 11],
+			"to": [11, 6, 11],
 			"faces": {
 				"north": {"uv": [0, 0, 3, 4], "texture": "#0"},
 				"east": {"uv": [3, 0, 6, 4], "texture": "#0"},
@@ -21,9 +21,9 @@
 			}
 		},
 		{
-			"name": "bottle_neck",
-			"from": [6, 8, 6],
-			"to": [10, 9, 10],
+			"name": "neck_lower",
+			"from": [6, 6, 6],
+			"to": [10, 8, 10],
 			"faces": {
 				"north": {"uv": [9, 5, 11, 5.5], "texture": "#0"},
 				"east": {"uv": [9, 5.5, 11, 6], "texture": "#0"},
@@ -34,9 +34,9 @@
 			}
 		},
 		{
-			"name": "cork",
-			"from": [5.5, 9, 5.5],
-			"to": [10.5, 11, 10.5],
+			"name": "neck_rim",
+			"from": [5.5, 8, 5.5],
+			"to": [10.5, 9, 10.5],
 			"faces": {
 				"north": {"uv": [8.5, 6, 11, 7], "texture": "#0"},
 				"east": {"uv": [6.5, 8.5, 9, 9.5], "texture": "#0"},
@@ -47,9 +47,9 @@
 			}
 		},
 		{
-			"name": "eternal_flame",
-			"from": [7, 2, 7],
-			"to": [9, 6, 9],
+			"name": "blue_flame",
+			"from": [7, 1.5, 7],
+			"to": [9, 5.5, 9],
 			"faces": {
 				"north": {"uv": [9, 1, 10, 3], "texture": "#0"},
 				"east": {"uv": [9, 3, 10, 5], "texture": "#0"},
@@ -57,6 +57,20 @@
 				"west": {"uv": [6.5, 9.5, 7.5, 11.5], "texture": "#0"},
 				"up": {"uv": [8.5, 10.5, 7.5, 9.5], "texture": "#0"},
 				"down": {"uv": [11, 2, 10, 3], "texture": "#0"}
+			}
+		},
+		{
+			"name": "cork_stopper",
+			"from": [6, 8.5, 6],
+			"to": [10, 10.5, 10],
+			"color": 1,
+			"faces": {
+				"north": {"uv": [0, 0, 2, 1], "texture": "#missing"},
+				"east": {"uv": [0, 0, 2, 1], "texture": "#missing"},
+				"south": {"uv": [0, 0, 2, 1], "texture": "#missing"},
+				"west": {"uv": [0, 0, 2, 1], "texture": "#missing"},
+				"up": {"uv": [0, 0, 2, 2], "texture": "#missing"},
+				"down": {"uv": [0, 0, 2, 2], "texture": "#missing"}
 			}
 		}
 	]

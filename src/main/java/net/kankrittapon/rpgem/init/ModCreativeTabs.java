@@ -25,6 +25,11 @@ public class ModCreativeTabs {
                         output.accept(ModItems.ETHERNAL_BOTTLE.get());
                         output.accept(ModItems.ZOMBIE_HEART.get());
 
+                        // Potions
+                        output.accept(ModItems.INFINITE_POTION_TIER_1.get());
+                        output.accept(ModItems.INFINITE_POTION_TIER_2.get());
+                        output.accept(ModItems.INFINITE_POTION_TIER_3.get());
+
                         // Blocks
                         output.accept(ModBlocks.ALCHEMY_TABLE.get());
                         output.accept(ModBlocks.ANCIENT_FORGE_TABLE.get());

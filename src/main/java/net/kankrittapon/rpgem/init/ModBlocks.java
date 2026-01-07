@@ -1,6 +1,7 @@
 package net.kankrittapon.rpgem.init;
 
 import net.kankrittapon.rpgem.RPGEasyMode;
+import net.kankrittapon.rpgem.block.AlchemyTableBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -17,7 +18,8 @@ public class ModBlocks {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(RPGEasyMode.MODID);
 
     public static final DeferredBlock<Block> ALCHEMY_TABLE = registerBlock("alchemy_table",
-            () -> new Block(BlockBehaviour.Properties.of().strength(2.5f).requiresCorrectToolForDrops()));
+            () -> new AlchemyTableBlock(
+                    BlockBehaviour.Properties.of().strength(2.5f).requiresCorrectToolForDrops().noOcclusion()));
     public static final DeferredBlock<Block> ANCIENT_FORGE_TABLE = registerBlock("ancient_forge_table",
             () -> new Block(BlockBehaviour.Properties.of().strength(3.5f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> TOME_OF_FORGOTTEN_TABLE = registerBlock("tome_of_forgotten_table",
