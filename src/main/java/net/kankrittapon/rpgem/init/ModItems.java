@@ -18,6 +18,14 @@ public class ModItems {
         public static final DeferredItem<Item> ZOMBIE_HEART = ITEMS.registerSimpleItem("zombie_heart",
                         new Item.Properties());
 
+        // Upgrade Stones
+        public static final DeferredItem<Item> UPGRADE_STONE_TIER_1 = ITEMS.registerSimpleItem("upgrade_stone_tier_1",
+                        new Item.Properties());
+        public static final DeferredItem<Item> UPGRADE_STONE_TIER_2 = ITEMS.registerSimpleItem("upgrade_stone_tier_2",
+                        new Item.Properties());
+        public static final DeferredItem<Item> UPGRADE_STONE_TIER_3 = ITEMS.registerSimpleItem("upgrade_stone_tier_3",
+                        new Item.Properties());
+
         public static final DeferredItem<Item> INFINITE_POTION_TIER_1 = ITEMS.register("infinite_potion_tier_1",
                         () -> new net.kankrittapon.rpgem.item.SequentialInfinitePotion(new Item.Properties()));
         public static final DeferredItem<Item> INFINITE_POTION_TIER_2 = ITEMS.register("infinite_potion_tier_2",

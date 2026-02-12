@@ -24,3 +24,12 @@ runs
 run-data
 
 repo
+
+# logs
+*.log
+build_log.txt
+build_debug.log
+build_gui.log
+
+# vscode
+.vscode

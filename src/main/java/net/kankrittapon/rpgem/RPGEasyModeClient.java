@@ -33,6 +33,14 @@ public class RPGEasyModeClient {
     }
 
     @SubscribeEvent
+    public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        event.register(net.kankrittapon.rpgem.init.ModMenuTypes.ALCHEMY_TABLE_MENU.get(),
+                net.kankrittapon.rpgem.screen.AlchemyTableScreen::new);
+        event.register(net.kankrittapon.rpgem.init.ModMenuTypes.ANCIENT_FORGE_MENU.get(),
+                net.kankrittapon.rpgem.screen.AncientForgeScreen::new);
+    }
+
+    @SubscribeEvent
     public static void registerItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
         event.register((stack, tintIndex) -> {
             if (tintIndex == 0) {
@@ -58,5 +66,14 @@ public class RPGEasyModeClient {
                 net.kankrittapon.rpgem.init.ModItems.INFINITE_POTION_TIER_1.get(),
                 net.kankrittapon.rpgem.init.ModItems.INFINITE_POTION_TIER_2.get(),
                 net.kankrittapon.rpgem.init.ModItems.INFINITE_POTION_TIER_3.get());
+    }
+
+    @SubscribeEvent
+    public static void registerEntityRenderers(
+            net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(net.kankrittapon.rpgem.init.ModEntities.ZOMBIE_KING.get(),
+                net.minecraft.client.renderer.entity.ZombieRenderer::new);
+        event.registerEntityRenderer(net.kankrittapon.rpgem.init.ModEntities.SKELETON_LORD.get(),
+                net.minecraft.client.renderer.entity.SkeletonRenderer::new);
     }
 }

@@ -49,7 +49,15 @@ public class AlchemyTableBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
             BlockHitResult hitResult) {
-        return InteractionResult.PASS;
+        if (!level.isClientSide()) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity instanceof AlchemyTableBlockEntity) {
+                player.openMenu((AlchemyTableBlockEntity) entity, pos);
+            } else {
+                throw new IllegalStateException("Our Container provider is missing!");
+            }
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     @Nullable

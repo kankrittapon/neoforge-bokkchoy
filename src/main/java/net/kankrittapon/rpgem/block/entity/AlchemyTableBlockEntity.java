@@ -26,7 +26,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlchemyTableBlockEntity extends BlockEntity {
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.kankrittapon.rpgem.menu.AlchemyTableMenu;
+
+public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider {
     public final ItemStackHandler itemHandler = new ItemStackHandler(5) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -106,16 +111,33 @@ public class AlchemyTableBlockEntity extends BlockEntity {
             return;
         }
 
-        if (hasRecipe()) {
-            increaseCraftingProgress();
-            setChanged(level, pos, state);
+        // Optimize: Check recipe only every 10 ticks or if we are already crafting
+        boolean isCrafting = progress > 0;
+        boolean shouldCheckRecipe = level.getGameTime() % 10 == 0 || !isCrafting;
 
-            if (hasProgressFinished()) {
-                craftItem();
+        if (shouldCheckRecipe) {
+            if (hasRecipe()) {
+                increaseCraftingProgress();
+                setChanged(level, pos, state);
+
+                if (hasProgressFinished()) {
+                    craftItem();
+                    resetProgress();
+                }
+            } else {
                 resetProgress();
             }
-        } else {
-            resetProgress();
+        } else if (isCrafting) {
+            // Already confirmed recipe exists, just increment progress
+            increaseCraftingProgress();
+            setChanged(level, pos, state);
+            if (hasProgressFinished()) {
+                // Double check before finishing
+                if (hasRecipe()) {
+                    craftItem();
+                }
+                resetProgress();
+            }
         }
     }
 
@@ -282,5 +304,17 @@ public class AlchemyTableBlockEntity extends BlockEntity {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("block.rpgem.alchemy_table");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory,
+            net.minecraft.world.entity.player.Player player) {
+        return new AlchemyTableMenu(containerId, playerInventory, this, this.data);
     }
 }

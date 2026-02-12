@@ -176,25 +176,24 @@ public class SequentialInfinitePotion extends Item {
             switch (combo) {
                 case "HB" -> { // Juggernaut
                     player.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, 600, 4)); // 30s +20HP
+                    player.addEffect(new MobEffectInstance(ModMobEffects.JUGGERNAUT, 600, 0));
                     player.setHealth(player.getMaxHealth());
                 }
                 case "HC" -> { // Purification
                     player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 2)); // 10s Regen III
                 }
-                case "BH" -> { // Thornmail
+                case "BH" -> { // Thornmail -> Iron Thorns
                     player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 300, 1)); // 15s Resist II
-                    // Thorns Logic
-                    player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(5.0))
-                            .stream().filter(e -> e != player)
-                            .forEach(e -> e.hurt(player.damageSources().magic(), 6.0f));
+                    player.addEffect(new MobEffectInstance(ModMobEffects.IRON_THORNS, 600, 0)); // 30s
                 }
                 case "BC" -> { // Unstoppable
                     player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 300, 1)); // 15s Resist II
+                    player.addEffect(new MobEffectInstance(ModMobEffects.UNSTOPPABLE, 600, 0));
                 }
                 case "CH" -> { // Evasion
                     player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 1)); // 15s Speed II
-                    player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 300, 0));
-                    player.addEffect(new MobEffectInstance(MobEffects.JUMP, 300, 1)); // Jump II
+                    player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 300, 0)); // 15s Invis
+                    player.addEffect(new MobEffectInstance(ModMobEffects.EVASION, 600, 0)); // 30s Dodge
                 }
                 case "CB" -> { // Diamond Skin
                     player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 600, 3)); // Absorp IV
