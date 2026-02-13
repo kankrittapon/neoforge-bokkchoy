@@ -13,7 +13,20 @@ public class ModMobEffects {
                         RPGEasyMode.MODID);
 
         public static final Holder<MobEffect> BOUNDLESS_GRACE = MOB_EFFECTS.register("boundless_grace",
-                        () -> new BoundlessGraceEffect(MobEffectCategory.BENEFICIAL, 0xFFD700)); // Gold Color
+                        () -> new BoundlessGraceEffect(MobEffectCategory.BENEFICIAL, 0xFFD700)
+                                        .addAttributeModifier(ModAttributes.REFLECT_RESIST,
+                                                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                                                        RPGEasyMode.MODID,
+                                                                        "grace_reflect_resist"),
+                                                        1.0,
+                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE)
+                                        .addAttributeModifier(ModAttributes.SEAL_RESIST,
+                                                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                                                        RPGEasyMode.MODID,
+                                                                        "grace_seal_resist"),
+                                                        1.0,
+                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE)); // Gold
+                                                                                                                                          // Color
 
         public static final Holder<MobEffect> JUGGERNAUT = MOB_EFFECTS.register("juggernaut",
                         () -> new BoundlessGraceEffect(MobEffectCategory.BENEFICIAL, 0x8B0000)

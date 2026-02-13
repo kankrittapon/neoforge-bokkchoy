@@ -1,8 +1,9 @@
 # Roadmap: RPGEasyMode (Antigravity RPG)
 
-> **อัปเดตล่าสุด:** 12 ก.พ. 2026  
+> **อัปเดตล่าสุด:** 13 ก.พ. 2026  
 > **Platform:** NeoForge 1.21.1  
-> แผนพัฒนาทั้งหมดของ Mod — จัดรวมจาก Source Code + NotebookLM Research + แผนผู้พัฒนา
+> แผนพัฒนาทั้งหมดของ Mod — จัดรวมจาก Source Code + NotebookLM Research + แผนผู้พัฒนา + Trait Counter System Design  
+> **Mod Ecosystem:** ทำงานร่วมกับ **Apotheosis + L2 Hostility + L2 Complements + L2 Library**
 
 ---
 
@@ -35,20 +36,24 @@
 - [x] **Unstoppable:** +100% Knockback Resistance
 - [x] **Boundless Grace (The Savior):** Divine Reflection + Cleanse + Death Prevention
 
-### 🛠️ Upgrade System ✅ (ขาดบางส่วน)
+### 🛠️ Upgrade System ✅ (ขาดบางส่วน → 🆕 ออกแบบใหม่)
 - [x] 3-Tier Upgrade Stone (70% / 40% / 10% success rate)
 - [x] Attribute Modifiers: Attack Damage + Armor
 - [x] Downgrade on Failure (Tier 2/3)
-- [ ] ❌ **ขาด: เพิ่ม Stat อื่น** (Attack Speed, Max Health, Movement Speed, Crit Chance)
-- [ ] ❌ **ขาด: Life Steal effect**
+- [ ] 🆕 **Forged Stone Crafting** — ระบบหลอมหิน 6 ชนิด (Fortitude/Agility/Destruction × Tier 2 + Ultimate)
+- [ ] 🆕 **Custom Attributes** — ลงทะเบียน 7 Attributes ใหม่ (Life Steal, Crit, Element Dmg, DR, EVA, Reflect/Seal Resist)
+- [ ] 🆕 **Weapon Upgrade Path** — ATK + Life Steal → Crit → Element Damage
+- [ ] 🆕 **Armor Path System** — เลือกสายตอน +6:
+  - 🧱 **Damage Reduction** (DR cap 50%, EVA 15%) — Forged Stone: Fortitude
+  - 💨 **Damage Evasion** (EVA cap 50%, DR 15%) — Forged Stone: Agility
 - [ ] ⚠️ **Bug: Savior Cleanse** ลบทุก Effect (ควรลบเฉพาะ Harmful)
 
-### 🧟 Special Mobs ✅ (ขาด Spawning + Visuals)
-- [x] **Zombie King** (300HP, 12 ATK) — Drop: Stone T1 (100%), T2 (50%)
-- [x] **Skeleton Lord** (250HP, 15 ATK) — Drop: Stone T2 (100%), T3 (30%)
-- [ ] ❌ **ขาด: Custom Renderer** (Scale ใหญ่ + Texture พิเศษ)
-- [ ] ❌ **ขาด: Looting Enchantment** (hardcoded = 0)
-- [ ] ❌ **ขาด: Texture** — Infinite Potion (3), Effect Icons (5), Boss Skins (2)
+### ⚗️ Boundless Grace V2 🆕
+- [ ] 🆕 **Potion T3 Counter ALL Traits** — เพิ่ม 6 protections ใหม่:
+  - Evasion↑ (30%→50%), Mob Slowness Aura, Reflect Shield (80%)
+  - Element Aura (cycle damage type), Anti-Heal Aura, Soul Purge
+  - Seal Ward (กัน Ragnarok)
+- [ ] 🆕 **Use CD ≠ Effect CD** — กด = Heal 3 Hearts เสมอ, Buff ได้เฉพาะตอน Effect ไม่ active
 
 ---
 
@@ -122,29 +127,71 @@ Fairy Companion = Entity ตัวเล็กบินตามผู้เล�
 
 ---
 
-## 🟣 Phase 5: Mod Compatibility & Spawning 🔲
-> *ยังไม่เริ่ม — ปรับให้เข้ากับ Mod อื่น*
+## 🟣 Phase 5: Mod Ecosystem Integration (Apotheosis + L2) 🔲
+> *ยังไม่เริ่ม — Antigravity ต้อง "เสริม" ระบบจาก Mod เหล่านี้ ไม่ใช่ทำซ้ำ*
+
+### 🎯 ปรัชญาการ Integrate
+> **หลักสำคัญ:** Antigravity เป็น Mod **เสริม** — ไม่สร้างระบบ Level/Affix/Armor เอง แต่ออกแบบให้ทำงานร่วมกับ Mod ที่มีอยู่แล้ว
+
+| Mod | หน้าที่หลัก | Antigravity ต้องปรับอะไร |
+|-----|-----------|------------------------|
+| **Apotheosis** | Boss/Elite สุ่มเกิด + Affix ติดไอเทม + ปลด Enchant Cap | ❗ ระวัง Attribute ซ้อนกับ Upgrade System |
+| **L2 Hostility** | Mob Level + 37 Traits + Scaling Difficulty | ❗ ไม่ต้องสร้างระบบ Level เอง |
+| **L2 Complements** | Endgame Armor (Sculkium/Eternium) + Enchants ใหม่ | ❗ Balance: ไม่ให้ Upgrade แรงกว่า Eternium เร็วเกิน |
+| **L2 Library** | Player Attribute Tab + Curios 54 Slots | ✅ ใช้ Curios สำหรับ Fairy Slot |
+
+### ⚔️ Apotheosis Integration
+- [ ] ตรวจสอบ Affix system → ไม่ทับซ้อนกับ `UPGRADE_LEVEL` Attribute Modifiers
+- [ ] Boss/Elite ที่ Apotheosis สุ่มเกิด → ต้องดรอปของจาก Antigravity ด้วย (ผ่าน Global Loot Modifier)
+- [ ] Enchant Cap ที่ Apotheosis ปลด → Potion effects ไม่ควร OP เกินเมื่อรวมกับ Enchant สูง
+- [ ] อาจเพิ่ม Custom Affix สำหรับ RPGEasyMode items
+
+### 📏 L2 Hostility Integration (ระบบ Level & Traits)
+> **แนวทาง:** ไม่สร้างระบบ Level เอง → ใช้ L2 Hostility เป็นหลัก
+
+#### Traits ที่ต้อง Aware (37 Traits, 3 ระดับ):
+| ระดับ | Traits สำคัญ | ผลกระทบต่อ Antigravity |
+|-------|------------|----------------------|
+| **Regular** | Fiery, Speedy, Tank | Evasion/Iron Thorns ยังใช้ได้ปกติ |
+| **Advanced (Lv.100+)** | **Adaptive** (กัน damage ประเภทที่โดนซ้ำ), **Reflect** (สะท้อน physical) | ⚠️ Reflect อาจ conflict กับ Iron Thorns |
+| **Legendary** | **Undying** (ฟื้นเรื่อยๆ), **Dementor** (กัน physical), **Ragnarok** (seal อุปกรณ์) | ⚠️ Savior อาจไม่พอรับมือ → ต้อง balance |
+
+- [ ] วิเคราะห์ API ของ L2 Hostility → อ่าน Mob Level สำหรับ Drop Rate scaling
+- [ ] กำหนด Level ขั้นต่ำให้ Zombie King / Skeleton Lord (เช่น Lv.50+)
+- [ ] ปรับ Drop Rate ตาม Mob Level → ของดีดรอปจาก Mob Level สูง
+- [ ] Config hooks สำหรับเปิด/ปิด L2H integration
+
+### 🛡️ Trait Counter Integration 🆕
+> **หลักการ:** Potion T3 = counter ชั่วคราว (60s), Forge = counter ถาวร (passive)
+
+- [ ] ตรวจสอบ L2H Trait events → hook เข้ากับ Boundless Grace V2 protections
+- [ ] Iron Thorns vs Reflect Trait → DamageSource filtering ป้องกัน loop
+- [ ] Element Aura → auto cycle damage type ทุก 5s (Physical→Magic→Fire→Ice)
+- [ ] Anti-Heal Aura → ลด mob regeneration 80% ในรัศมี 8 บล็อก
+- [ ] Soul Purge → ป้องกัน Undying trait mob ฟื้นจากตาย
+- [ ] Seal Ward → ป้องกัน Ragnarok equipment seal
+
+### 🛡️ L2 Complements Balancing
+> **กฎสำคัญ:** Ancient Forge ต้องไม่ทำให้ไอเทม OP เกิน Endgame ของ L2C
+
+| วัสดุ L2C | ความแรง | Antigravity ต้องทำ |
+|-----------|---------|-------------------|
+| **Sculkium** | > Netherite (HP + ATK สูงเหมือน Warden) | Upgrade ระดับ Tier 2 ควรเท่า Sculkium |
+| **Eternium** | Infinite Durability | Upgrade Ultimate ควรมี bonus เทียบเท่า |
+| **Totemic Gold** | Auto-Heal + กัน Wither/Poison | ไม่ควรซ้อนกับ Savior (เลือกอย่างใดอย่างหนึ่ง) |
+
+- [ ] ตรวจสอบ Attribute ของ L2C armors → ปรับ Upgrade scaling ไม่ให้เกินกว่า
+- [ ] Enchants ใหม่ (Void Touch, Life Mending, Hardened) → ไม่ conflict กับ Potion effects
+- [ ] ออกแบบ "Upgrade Ceiling" ให้สอดคล้องกับ power curve ของ L2C
 
 ### 🌍 Natural Spawning (Biome Modifiers)
 - [ ] สร้าง JSON Biome Modifiers สำหรับ Zombie King / Skeleton Lord
 - [ ] กำหนด Spawn Weight, Min/Max Count, Biome targets
-- [ ] ใช้ `RegisterSpawnPlacementsEvent` กำหนดกฎ (ON_GROUND, ดาสว่าง)
-
-### 🔗 Apotheosis Compatibility
-- [ ] ตรวจสอบ API ของ Apotheosis สำหรับ Item Rarity / Affix system
-- [ ] ปรับ Upgrade System ให้ไม่ conflict กับ Apotheosis modifiers
-- [ ] อาจเพิ่ม Custom Affix สำหรับ RPGEasyMode items
-
-### 📏 Level-Based Mob System (ใช้ Mod ภายนอก)
-> **แนวทาง:** ไม่สร้างระบบ Level เอง → ใช้ Mod ที่มีระบบ Level อยู่แล้ว (ชื่อ Mod: **TBD — รอกำหนด**)
-
-- [ ] วิเคราะห์ API ของ Mod Level ที่เลือกใช้
-- [ ] สร้าง Config hooks ให้ Antigravity อ่านค่า Mob Level จาก Mod นั้นได้
-- [ ] ปรับ Drop Rate / Loot ตาม Mob Level (ผ่าน Config)
+- [ ] ใช้ `RegisterSpawnPlacementsEvent` กำหนดกฎ (ON_GROUND, กลางคืน)
 
 ### 🛡️ Mod Compatibility ทั่วไป
 - [ ] **JEI (Just Enough Items):** แสดงสูตร Alchemy Table + Ancient Forge
-- [ ] **Curios API:** รองรับ Fairy ผ่าน Curios Slot
+- [ ] **Curios API:** รองรับ Fairy ผ่าน Curios Slot (ใช้ L2 Library's expanded slots)
 - [ ] **WAILA/Jade:** แสดงข้อมูล Block Entities ใน Tooltip
 
 ---
@@ -191,7 +238,7 @@ Fairy Companion = Entity ตัวเล็กบินตามผู้เล�
 | Phase 2: Combat & Crafting | 🟡 เกือบเสร็จ | ~85% (ขาด Bug Fixes, Textures, Extra Stats) |
 | Phase 3: Item Drop & Loot | 🔲 ยังไม่เริ่ม | 0% (ต้องออกแบบ Logic) |
 | Phase 4: Familia System | 🔲 ยังไม่เริ่ม | 0% (มี Research แล้ว) |
-| Phase 5: Mod Compatibility | 🔲 ยังไม่เริ่ม | 0% |
+| Phase 5: Mod Ecosystem (Apotheosis+L2) | 🔲 ยังไม่เริ่ม | 0% (มี Research ครบ) |
 | Phase 6: Special Mobs & NPCs | 🔲 ยังไม่เริ่ม | 0% (มีโครงร่าง) |
 | Phase 7: RPG Core & Polish | 🔲 ยังไม่เริ่ม | 0% |
 

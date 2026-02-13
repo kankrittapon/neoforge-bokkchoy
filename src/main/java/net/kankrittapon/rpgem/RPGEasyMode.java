@@ -42,6 +42,9 @@ public class RPGEasyMode {
         ModMenuTypes.register(modEventBus);
         // Register the Deferred Register to the mod event bus so effects get registered
         ModMobEffects.register(modEventBus);
+        // Register the Deferred Register to the mod event bus so custom attributes get
+        // registered
+        net.kankrittapon.rpgem.init.ModAttributes.register(modEventBus);
         // Register the Deferred Register to the mod event bus so entities get
         // registered
         net.kankrittapon.rpgem.init.ModEntities.ENTITIES.register(modEventBus);

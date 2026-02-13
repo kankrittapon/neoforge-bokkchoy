@@ -12,5 +12,18 @@
   "item.rpgem.upgrade_stone_tier_3": "Upgrade Stone (Tier 3)",
   "item.rpgem.infinite_potion_tier_1": "Infinite Potion (Tier 1)",
   "item.rpgem.infinite_potion_tier_2": "Infinite Potion (Tier 2)",
-  "item.rpgem.infinite_potion_tier_3": "The Elixir of Boundless Eternity"
+  "item.rpgem.infinite_potion_tier_3": "The Elixir of Boundless Eternity",
+  "item.rpgem.forged_stone_fortitude": "Forged Stone: Fortitude",
+  "item.rpgem.forged_stone_agility": "Forged Stone: Agility",
+  "item.rpgem.forged_stone_destruction": "Forged Stone: Destruction",
+  "item.rpgem.forged_stone_ultimate_fortitude": "Forged Stone: Ultimate Fortitude",
+  "item.rpgem.forged_stone_ultimate_agility": "Forged Stone: Ultimate Agility",
+  "item.rpgem.forged_stone_ultimate_destruction": "Forged Stone: Ultimate Destruction",
+  "attribute.rpgem.life_steal": "Life Steal",
+  "attribute.rpgem.crit_chance": "Crit Chance",
+  "attribute.rpgem.element_damage": "Element Damage",
+  "attribute.rpgem.damage_reduction": "Damage Reduction",
+  "attribute.rpgem.evasion": "Evasion",
+  "attribute.rpgem.reflect_resist": "Reflect Resist",
+  "attribute.rpgem.seal_resist": "Seal Resist"
 }

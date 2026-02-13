@@ -1,6 +1,6 @@
 # Mod Details: RPGEasyMode (Antigravity RPG)
 
-> **อัปเดตล่าสุด:** 12 ก.พ. 2026  
+> **อัปเดตล่าสุด:** 13 ก.พ. 2026  
 > **Platform:** NeoForge 1.21.1  
 > **Mod ID:** `rpgem`
 
@@ -10,12 +10,24 @@
 
 ## 1. ⚔️ Items (ไอเท็มทั้งหมด)
 
-### 💎 Upgrade Materials (หินตีบวก)
+### 💎 Upgrade Stones — หินธรรมดา (ใช้ +1 ถึง +15)
 | ไอเท็ม | Registry ID | คำอธิบาย | แหล่งที่มา |
 |--------|-------------|----------|------------|
 | Upgrade Stone Tier 1 | `upgrade_stone_tier_1` | หินตีบวกระดับต้น (ใช้ +1 ถึง +15) | Drop: Zombie King (100%) |
-| Upgrade Stone Tier 2 | `upgrade_stone_tier_2` | หินตีบวกระดับกลาง (ใช้ I ถึง X) | Drop: Zombie King (50%), Skeleton Lord (100%) |
-| Upgrade Stone Tier 3 | `upgrade_stone_tier_3` | หินตีบวกระดับสูง (ใช้ Ultimate) | Drop: Skeleton Lord (30%) |
+| Upgrade Stone Tier 2 | `upgrade_stone_tier_2` | วัตถุดิบหลอม Forged Stone (Tier 2) | Drop: Zombie King (50%), Skeleton Lord (100%) |
+| Upgrade Stone Tier 3 | `upgrade_stone_tier_3` | วัตถุดิบหลอม Forged Stone (Ultimate) | Drop: Skeleton Lord (30%) |
+
+### 🔨 Forged Stones — หินหลอม (ใช้ I~X + Ultimate) 🆕
+> **ต้องหลอมจากวัตถุดิบ** — ชนิดหินกำหนดสายเกราะ / สายอาวุธ
+
+| ไอเท็ม | Registry ID | สำหรับ | วัตถุดิบ |
+|--------|-------------|--------|----------|
+| Forged Stone: Fortitude | `forged_stone_fortitude` | เกราะสาย 🧱 DR (I~X) | Stone T2 + Iron Block + Diamond |
+| Forged Stone: Agility | `forged_stone_agility` | เกราะสาย 💨 EVA (I~X) | Stone T2 + Gold Block + Emerald |
+| Forged Stone: Destruction | `forged_stone_destruction` | อาวุธ (I~X) | Stone T2 + Blaze Rod + Nether Star |
+| Forged Stone: Ult Fortitude | `forged_stone_ultimate_fortitude` | เกราะสาย 🧱 DR (Ultimate) | Stone T3 + Netherite + Totem |
+| Forged Stone: Ult Agility | `forged_stone_ultimate_agility` | เกราะสาย 💨 EVA (Ultimate) | Stone T3 + Netherite + Enchanted Book |
+| Forged Stone: Ult Destruction | `forged_stone_ultimate_destruction` | อาวุธ (Ultimate) | Stone T3 + Netherite + Dragon Breath |
 
 ### 🧪 Alchemy Materials (วัตถุดิบ Alchemy)
 | ไอเท็ม | Registry ID | รหัสย่อ | คำอธิบาย |
@@ -62,37 +74,89 @@
 ### 4.1 🛠️ Ancient Forge (ระบบตีบวก)
 
 **ช่อง UI:** 2 ช่อง (Equipment + Upgrade Stone)  
-**ข้อมูลเก็บใน:** `DataComponent` → `rpgem:upgrade_level` (Integer)
+**ข้อมูลเก็บใน:** `DataComponent` → `rpgem:upgrade_level` (Integer) + `rpgem:armor_path` (String: `"none"` / `"reduction"` / `"evasion"`)
 
-#### ระดับการอัพ (3 Tier):
+#### หินตีบวก (3 ระดับ):
 
-| Tier | หินที่ใช้ | ช่วงเลเวล | อัตราสำเร็จ | แสดงผล | หมายเหตุ |
-|------|----------|-----------|------------|--------|---------|
-| Tier 1 | `upgrade_stone_tier_1` | +1 ถึง +15 | **70%** (Config) | `+1`, `+2`, ... `+15` | ล้มเหลว: ไม่ลดเลเวล |
-| Tier 2 | `upgrade_stone_tier_2` | I ถึง X (16-25) | **40%** (Config) | `I`, `II`, ... `X` | ล้มเหลว: **50% โอกาสลดเลเวล 1** (ไม่ต่ำกว่า +15) |
-| Tier 3 | `upgrade_stone_tier_3` | Ultimate 1-3 (26-28) | **10%** (Config) | `Ultimate 1`, `Ultimate 2`, `Ultimate 3` | ล้มเหลว: **50% โอกาสลดเลเวล 1** (ไม่ต่ำกว่า +25) |
+| ระดับ | หินที่ใช้ | ช่วงเลเวล | อัตราสำเร็จ | หมายเหตุ |
+|------|----------|-----------|------------|---------|
+| Tier 1 | Upgrade Stone Tier 1 (ธรรมดา) | +1 ถึง +15 | **70%** | ล้มเหลว: ไม่ลดเลเวล |
+| Tier 2 | **Forged Stone** (หินหลอม) | I ถึง X (16-25) | **40%** | ล้มเหลว: 50% ลดเลเวล 1 |
+| Ultimate | **Forged Stone Ultimate** (หินหลอม) | Ult 1-3 (26-28) | **10%** | ล้มเหลว: 50% ลดเลเวล 1 |
 
-**Max Level: 28 (Ultimate 3)**
+> **สายเกราะถูกกำหนดตอนใช้ Forged Stone ครั้งแรก (ที่ +6)**  
+> ถ้าเกราะเป็นสาย 🧱 แล้ว → ใช้ Forged Stone: Agility ไม่ได้
 
-#### ค่าสถานะที่เพิ่ม (Attribute Modifiers):
+---
 
-| ค่า | สูตร | EquipmentSlot | ตัวอย่าง (+15) | ตัวอย่าง (Ultimate 3 = 28) |
-|-----|------|---------------|----------------|---------------------------|
-| **Attack Damage** | Lv 1-15: `+1.0/lv` ❘ Lv 16-25: `+2.0/lv` ❘ Lv 26+: `+5.0/lv` | MAINHAND | +15.0 | +15 + 20 + 15 = **+50.0** |
-| **Armor** | `+0.5/lv` ทุกระดับ | ARMOR | +7.5 | **+14.0** |
+#### ⚔️ อาวุธ (Weapon Upgrade) — ใช้ Forged Stone: Destruction
 
-> [!IMPORTANT]
-> **คำถามผู้ใช้:** "เพิ่มแค่ Attack Damage / Armor เหมาะสมไหมสำหรับ MMORPG?"
-> 
-> **คำตอบ:** สำหรับ MVPPhase แรกนี้เพียงพอ แต่สำหรับ MMORPG ที่สมบูรณ์ ควรเพิ่มค่าสถานะเพิ่มเติมในอนาคต เช่น:
-> - **Attack Speed** — ความเร็วโจมตี
-> - **Movement Speed** — ความเร็วเคลื่อนที่
-> - **Max Health** — เลือดสูงสุด
-> - **Knockback Resistance** — ต้านทานการดันถอย
-> - **Critical Chance (Custom)** — โอกาสคริ
-> - **Life Steal (Custom)** — ดูดเลือด
-> 
-> ตอนนี้โครงสร้าง `ItemAttributeModifierEvent` รองรับการเพิ่มค่าเหล่านี้ได้ทันที (ยกเว้น Custom stat ที่ต้องสร้าง Attribute ใหม่)
+| ระดับ | ATK | Trait Counter |
+|------|-----|--------------|
+| +1 ~ +5 | +1/lv | — |
+| +6 ~ +10 | +1/lv | Life Steal 2% |
+| +11 ~ +15 | +1/lv | Crit Chance 8% |
+| I ~ V | +2/lv | Element Damage 15% |
+| VI ~ X | +2/lv | Crit 15% + Life Steal 4% |
+| Ultimate 1 | +5/lv | Element 25% + Life Steal 5% |
+| Ultimate 2 | +5/lv | Crit 20% + Element 30% |
+| Ultimate 3 | +5/lv | **ALL MAX** (LS 8%, Crit 25%, Ele 35%) |
+
+---
+
+#### 🛡️ เกราะ (Armor Upgrade) — 2 สาย เลือกตอน +6
+
+> ⚖️ **Cap สถิติ:** ทั้งสองสายได้ทั้ง DR + EVA แต่ cap ต่างกัน
+
+| สถิติ | 🧱 Reduction สาย | 💨 Evasion สาย |
+|-------|:---:|:---:|
+| **Damage Reduction** | **50%** (หลัก) | 15% (รอง) |
+| **Evasion** | 15% (รอง) | **50%** (หลัก) |
+| **Life Steal** | 8% | 8% |
+| **Reflect Resist** | 80% | 40% |
+| **Seal Resist** | 80% | 60% |
+
+**สาย 🧱 Damage Reduction** — ใช้ Forged Stone: Fortitude  
+*"โดนตี − ดาเมจน้อย เลือดเยอะ"*
+
+| ระดับ | Armor | DR | EVA | อื่นๆ |
+|------|-------|----|----|------|
+| +1 ~ +5 | +0.5/lv | — | — | — |
+| +6 ~ +10 | +0.5/lv | 5% | — | Max HP +2/lv |
+| +11 ~ +15 | +0.5/lv | 10% | 3% | Reflect Resist 30% |
+| I ~ V | +1.0/lv | 20% | 5% | Reflect Resist 50% |
+| VI ~ X | +1.0/lv | 30% | 8% | Seal Resist 40% |
+| Ult 1 | +1.5/lv | 35% | 10% | Seal 60% + Reflect 60% |
+| Ult 2 | +1.5/lv | 40% | 12% | Seal 70% + Reflect 70% |
+| Ult 3 | +1.5/lv | **50%** | **15%** | Seal **80%** + Reflect **80%** + HP+30 |
+
+**สาย 💨 Damage Evasion** — ใช้ Forged Stone: Agility  
+*"โดนตี — มีโอกาสหลบ ไม่โดนเลย"*
+
+| ระดับ | Armor | EVA | DR | อื่นๆ |
+|------|-------|-----|----|------|
+| +1 ~ +5 | +0.3/lv | — | — | — |
+| +6 ~ +10 | +0.3/lv | 8% | — | Speed on Dodge (Speed I 2s) |
+| +11 ~ +15 | +0.3/lv | 15% | 3% | Reflect Resist 20% |
+| I ~ V | +0.5/lv | 25% | 5% | Seal Resist 20% |
+| VI ~ X | +0.5/lv | 33% | 8% | Seal 35% + Reflect 30% |
+| Ult 1 | +0.5/lv | 38% | 10% | Seal 45% |
+| Ult 2 | +0.5/lv | 44% | 12% | Seal 50% + Reflect 35% |
+| Ult 3 | +0.5/lv | **50%** | **15%** | Seal **60%** + Reflect **40%** |
+
+---
+
+#### 🆕 Custom Attributes (ต้องสร้างใหม่)
+
+| Attribute | Registry ID | สำหรับ | คำอธิบาย |
+|-----------|------------|--------|----------|
+| Life Steal | `rpgem:life_steal` | ⚔️ Weapon | ดูดเลือด % ต่อ Hit |
+| Crit Chance | `rpgem:crit_chance` | ⚔️ Weapon | โอกาสดาเมจ ×2 |
+| Element Damage | `rpgem:element_damage` | ⚔️ Weapon | เพิ่ม Magic damage % |
+| Damage Reduction | `rpgem:damage_reduction` | 🧱 Armor | ลดดาเมจตรง % |
+| Evasion | `rpgem:evasion` | 💨 Armor | โอกาสหลบโจมตี % |
+| Reflect Resist | `rpgem:reflect_resist` | 🛡️ Armor | ลด reflected damage % |
+| Seal Resist | `rpgem:seal_resist` | 🛡️ Armor | โอกาสกัน equipment seal % |
 
 ---
 
@@ -134,9 +198,25 @@
 
 | ชื่อ | เอฟเฟค |
 |------|--------|
-| **The Elixir of Boundless Eternity** 🌟 | Full Heal 100% + **Boundless Grace** (60s) + Regen III (15s) + Resistance II (15s) + Absorption IV (2m) + Fire Resistance (20s) |
+| **The Elixir of Boundless Eternity** 🌟 | Full Heal 100% + **Boundless Grace V2** (60s) + Regen III (15s) + Resistance II (15s) + Absorption IV (2m) + Fire Resistance (20s) |
 
 **ลักษณะพิเศษ:** มี Enchantment Glint (เรืองแสงรุ้ง), ชื่อสีทอง
+
+#### 🆕 Boundless Grace V2 — Counter ทุก L2H Trait:
+> **กฎ:** Use CD (2s) ≠ Effect CD (60s) — กดใช้ได้ทุก 2s เพื่อ Heal 3 Hearts, Buff ได้เฉพาะตอน Effect ไม่ active
+
+| Protection | ทำอะไร | Counter Traits |
+|-----------|--------|---------------|
+| Fire Resistance ✅ | กันไฟ | Fiery |
+| Evasion↑ 🔄 | หลบ 30%→50% | Speedy, Dementor |
+| Mob Slowness Aura 🆕 | Mob รอบ 8 บล็อก Slow II | Speedy |
+| Resistance II + Absorb IV ✅ | ลดดาเมจ+เกราะเสริม | Tank |
+| Reflect Shield 🆕 | ลด reflected dmg 80% | Reflect |
+| Element Aura 🆕 | ดาเมจ cycle ทุก 5s | Adaptive, Dementor |
+| Anti-Heal Aura 🆕 | Mob ฟื้น HP -80% | Regenerating |
+| Soul Purge 🆕 | Mob ตายแล้วไม่ฟื้น | Undying |
+| Seal Ward 🆕 | กัน equipment seal | Ragnarok |
+| Death Prevention ✅ | กันตาย 1 ครั้ง | ทุก Trait |
 
 ---
 
@@ -247,26 +327,68 @@
 - **Condition:** ยังไม่กำหนด (แนะนำ: Spawn Weight ต่ำมาก, กลางคืนเท่านั้น)
 - **วิธีทำ:** ใช้ NeoForge Biome Modifiers (JSON Datapack)
 
+## 7. 🌐 Mod Ecosystem (Apotheosis + L2 Mods)
+
+> **หลักการ:** Antigravity เป็น Mod **เสริม** ไม่สร้างระบบ Level/Affix/Endgame Armor เอง  
+> ใช้ Mod ภายนอกเป็นหลักแล้วออกแบบให้ทำงานร่วมกัน
+
+### Mod ที่ใช้ร่วมกัน:
+
+| Mod | เวอร์ชัน | หน้าที่หลัก |
+|-----|---------|-----------|
+| **Apotheosis** | 1.21.x | Boss/Elite สุ่มเกิด, Affix ติดไอเทม, ปลด Enchant Level Cap |
+| **L2 Hostility** | 1.21.x | ระบบ Mob Level + 37 Traits (Regular/Advanced/Legendary) + Scaling Difficulty |
+| **L2 Complements** | 1.21.x | Endgame Armor (Sculkium, Eternium, Totemic Gold, Poseidite) + Enchants ใหม่ |
+| **L2 Library** | 1.21.x | Player Attribute Tab UI + ขยาย Curios Slots (54 ช่อง) |
+
+### Traits สำคัญจาก L2 Hostility + Counter จาก Antigravity:
+
+| Trait (บน Mob) | ผู้เล่นโดนอะไร | Counter: Potion | Counter: Forge |
+|---------------|---------------|----------------|----------------|
+| **Fiery** | ถูกจุดไฟ | ✅ T1 C→B Fire Resist | — |
+| **Speedy** | Mob ตีถี่ หนีไม่ทัน | ✅ T1 Evasion / T3 Slow Aura | 💨 EVA หลบ |
+| **Tank** | Mob อึด สู้ไม่จบ | ✅ T3 Resist+Absorb | ⚔️ Crit+LS / 🧱 DR ทน |
+| **Adaptive** | กัน damage ประเภทที่โดนซ้ำ | ✅ T3 Element Aura | ⚔️ Element Dmg |
+| **Reflect** | ตี Mob แล้วดาเมจสะท้อนกลับ | ✅ T3 Reflect Shield 80% | 🧱 Reflect Resist 80% |
+| **Regenerating** | Mob ฟื้น HP ตลอด | ✅ T3 Anti-Heal Aura | ⚔️ Crit (ฆ่าเร็ว) |
+| **Undying** | ฆ่าแล้วฟื้นขึ้นมาใหม่ | ✅ T3 Soul Purge | ⚔️ Crit (ฆ่าเร็ว) |
+| **Dementor** | กัน physical + เจาะเกราะ | ✅ T3 Element+Evasion↑ | ⚔️ Element / 💨 EVA หลบ |
+| **Ragnarok** | seal อุปกรณ์ | ✅ T3 Seal Ward | 🧱 Seal Resist 80% |
+
+### Balance Guidelines:
+
+| หัวข้อ | กฎเกณฑ์ |
+|--------|---------|
+| **Upgrade vs L2C** | Ancient Forge Ultimate **ไม่ควร** แรงกว่า Eternium/Sculkium เร็วเกิน |
+| **Potion vs Enchant** | Potion effects + Apotheosis Enchant Cap ปลด = ต้องระวังไม่ OP |
+| **Boss Level** | Zombie King/Skeleton Lord ควรอยู่ที่ L2H Level 50+ |
+| **Drop Scaling** | ของดี Drop จากมอนสเตอร์ Level สูง (อ่านจาก L2H API) |
+| **Affix Overlap** | `UPGRADE_LEVEL` Attribute ต้องไม่ซ้อนกับ Apotheosis Affix |
+| **T3 = Counter ALL** | Potion T3 Boundless Grace V2 ต้อง counter ได้ทุก Trait (60s) |
+| **Forge = Passive** | Ancient Forge ให้ passive Trait protection ตามระดับ Upgrade |
+
 ---
 
-## 7. 🚧 ระบบที่ยังขาด / ต้องปรับปรุง
+## 8. 🚧 ระบบที่ยังขาด / ต้องปรับปรุง
 
 | ลำดับ | ระบบ | รายละเอียด | ความสำคัญ |
 |-------|------|-----------|----------|
 | 1 | **Spawn Rules** | Mob ไม่เกิดเองในโลก ต้องทำ Biome Modifiers | 🔴 สูง |
-| 2 | **Looting Enchantment** | ยังไม่ทำงานกับ Special Mob drops (hardcoded = 0) | 🟡 กลาง |
-| 3 | **เพิ่ม Stat ที่อัพได้** | ตอนนี้มีแค่ Attack Damage + Armor → ควรเพิ่ม Attack Speed, Max Health, Speed | 🟡 กลาง |
-| 4 | **Tome of Forgotten Table** | บล็อกลงทะเบียนแล้วแต่ไม่มี Logic/GUI ใดๆ | 🟡 กลาง |
-| 5 | **Custom Mob Renderer** | Boss ดูเหมือน Zombie/Skeleton ปกติ ยังไม่มี Scale/Texture พิเศษ | 🟡 กลาง |
-| 6 | **Savior Cleanse Bug** | `removeAllEffects()` ลบทุก Effect รวมถึง Beneficial → ควรลบเฉพาะ Harmful | 🟠 ปานกลาง |
-| 7 | **Life Steal** | ยังไม่ได้ทำ (อยู่ใน Roadmap Phase 2) | 🟡 กลาง |
-| 8 | **GUI Animations** | ไม่มี Particle/Animation ตอน Crafting/Upgrade เสร็จ | 🟢 ต่ำ |
-| 9 | **Potion Texture ขาด** | Infinite Potion ทั้ง 3 Tier ไม่มี Item Model ใน assets | 🟡 กลาง |
-| 10 | **Player Stats UI** | ไม่มีหน้าจอแสดงค่าสถานะรวมของผู้เล่น | 🟢 ต่ำ (Phase 4) |
+| 2 | **Forged Stone Crafting** | 🆕 ระบบหลอมหิน 6 ชนิด ใน Alchemy Table / Forge | 🔴 สูง |
+| 3 | **Custom Attributes** | 🆕 ลงทะเบียน 7 Attributes ใหม่ (Life Steal, Crit, Element, DR, EVA, Reflect/Seal Resist) | 🔴 สูง |
+| 4 | **Armor Path System** | 🆕 ระบบเลือกสายเกราะ (🧱 DR / 💨 EVA) ตอน +6 | 🔴 สูง |
+| 5 | **Boundless Grace V2** | 🆕 เพิ่ม 6 protections ใหม่ใน T3 (Reflect Shield, Element Aura, Seal Ward, Soul Purge, Spirit Piercing, Anti-Heal Aura) | 🔴 สูง |
+| 6 | **Looting Enchantment** | ยังไม่ทำงานกับ Special Mob drops (hardcoded = 0) | 🟡 กลาง |
+| 7 | **Tome of Forgotten Table** | บล็อกลงทะเบียนแล้วแต่ไม่มี Logic/GUI ใดๆ | 🟡 กลาง |
+| 8 | **Custom Mob Renderer** | Boss ดูเหมือน Zombie/Skeleton ปกติ ยังไม่มี Scale/Texture พิเศษ | 🟡 กลาง |
+| 9 | **Savior Cleanse Bug** | `removeAllEffects()` ลบทุก Effect รวมถึง Beneficial → ควรลบเฉพาะ Harmful | 🟠 ปานกลาง |
+| 10 | **GUI Animations** | ไม่มี Particle/Animation ตอน Crafting/Upgrade เสร็จ | 🟢 ต่ำ |
+| 11 | **Potion Texture ขาด** | Infinite Potion ทั้ง 3 Tier ไม่มี Item Model ใน assets | 🟡 กลาง |
+| 12 | **Player Stats UI** | ไม่มีหน้าจอแสดงค่าสถานะรวมของผู้เล่น | 🟢 ต่ำ (Phase 4) |
 
 ---
 
-## 8. 🎨 Textures ที่ต้องทำ
+## 9. 🎨 Textures ที่ต้องทำ
 
 ### ✅ มีแล้ว (มี Item Model JSON):
 | ไอเท็ม | ไฟล์ Model |
@@ -296,7 +418,7 @@
 
 ---
 
-## 9. 📁 โครงสร้างไฟล์ Source Code
+## 10. 📁 โครงสร้างไฟล์ Source Code
 
 ```
 src/main/java/net/kankrittapon/rpgem/

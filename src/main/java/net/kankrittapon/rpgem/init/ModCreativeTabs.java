@@ -25,6 +25,19 @@ public class ModCreativeTabs {
                         output.accept(ModItems.ETHERNAL_BOTTLE.get());
                         output.accept(ModItems.ZOMBIE_HEART.get());
 
+                        // Upgrade Stones
+                        output.accept(ModItems.UPGRADE_STONE_TIER_1.get());
+                        output.accept(ModItems.UPGRADE_STONE_TIER_2.get());
+                        output.accept(ModItems.UPGRADE_STONE_TIER_3.get());
+
+                        // Forged Stones
+                        output.accept(ModItems.FORGED_STONE_FORTITUDE.get());
+                        output.accept(ModItems.FORGED_STONE_AGILITY.get());
+                        output.accept(ModItems.FORGED_STONE_DESTRUCTION.get());
+                        output.accept(ModItems.FORGED_STONE_ULTIMATE_FORTITUDE.get());
+                        output.accept(ModItems.FORGED_STONE_ULTIMATE_AGILITY.get());
+                        output.accept(ModItems.FORGED_STONE_ULTIMATE_DESTRUCTION.get());
+
                         // Potions
                         output.accept(ModItems.INFINITE_POTION_TIER_1.get());
                         output.accept(ModItems.INFINITE_POTION_TIER_2.get());
