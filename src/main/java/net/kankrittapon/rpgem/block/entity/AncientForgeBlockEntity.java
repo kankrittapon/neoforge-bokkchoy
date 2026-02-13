@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import net.neoforged.neoforge.items.ItemStackHandler;
