@@ -11,8 +11,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class AlchemyTableScreen extends AbstractContainerScreen<AlchemyTableMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(RPGEasyMode.MODID,
-            "textures/gui/alchemy_table.png");
+    // Temporary: Use Dispenser texture to avoid purple checkerboard until custom
+    // asset is ready
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft",
+            "textures/gui/container/dispenser.png");
 
     public AlchemyTableScreen(AlchemyTableMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);

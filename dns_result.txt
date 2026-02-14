@@ -1,0 +1,5 @@
+Server:  dns.google
+Address:  8.8.8.8
+
+Name:    maven.modrinth.com
+

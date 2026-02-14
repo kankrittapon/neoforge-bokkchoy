@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "entries": [
+    "rpgem:zombie_heart_from_zombie",
+    "rpgem:bone_of_maze_from_skeleton",
+    "rpgem:cosmic_emerald_from_enderman",
+    "rpgem:cosmic_emerald_from_witch",
+    "rpgem:ethernal_bottle_from_witch",
+    "rpgem:upgrade_stone_from_hostile"
+  ]
+}

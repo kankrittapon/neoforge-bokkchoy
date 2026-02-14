@@ -1,0 +1,14 @@
+{
+  "type": "rpgem:add_item",
+  "conditions": [
+    {
+      "condition": "minecraft:entity_properties",
+      "entity": "this",
+      "predicate": {
+        "type": "minecraft:enderman"
+      }
+    }
+  ],
+  "item": "rpgem:cosmic_emerald",
+  "chance": 0.0005
+}

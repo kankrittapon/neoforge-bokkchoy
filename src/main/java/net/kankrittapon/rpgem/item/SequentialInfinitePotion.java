@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
@@ -38,25 +39,50 @@ public class SequentialInfinitePotion extends Item {
             List<String> history = getIngredientHistory(stack);
             int tier = history.size();
 
-            // 1. Perform Cleanse
-            if (tier >= 2) {
-                performCleanse(player, tier);
-            }
+            // 1. Always Heal (Instant Action)
+            performHealing(player, tier);
 
-            // 2. Apply Custom Effects
-            applyEffects(player, history);
-
-            // 3. Handle Cooldown
-            int cooldownSeconds = switch (tier) {
-                case 1 -> 8;
-                case 2 -> 6;
-                case 3 -> 2; // Very fast ("OP")
-                default -> 8;
+            // 2. Check Buff Cooldown (Separate from Healing)
+            long lastBuffTime = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag()
+                    .getLong("LastBuffTime");
+            long currentTime = level.getGameTime();
+            long cooldownTicks = switch (tier) {
+                case 1 -> 160; // 8s
+                case 2 -> 120; // 6s
+                case 3 -> 40; // 2s (Actually Savior V2: 2s CD for Buff Cleanse)
+                default -> 160;
             };
-            player.getCooldowns().addCooldown(this, cooldownSeconds * 20);
+
+            if (currentTime >= lastBuffTime + cooldownTicks) {
+                // Perform Cleanse & Apply Buffs
+                if (tier >= 2)
+                    performCleanse(player, tier);
+                applyEffects(player, history);
+
+                // Update Last Buff Time
+                CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+                CompoundTag tag = customData.copyTag();
+                tag.putLong("LastBuffTime", currentTime);
+                stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+
+                // Optional: Short Item Cooldown to prevent "Visual Spam"
+                player.getCooldowns().addCooldown(this, 20); // 1s universal CD
+            } else {
+                // Buffs on CD - only healing occurred
+                player.displayClientMessage(Component.literal("§7[ Potion Buffs on Cooldown... ]"), true);
+            }
         }
 
         return super.finishUsingItem(stack, level, livingEntity);
+    }
+
+    private void performHealing(Player player, int tier) {
+        if (tier == 1)
+            player.heal(8.0F); // 4 Hearts
+        else if (tier == 2)
+            player.heal(16.0F); // 8 Hearts
+        else if (tier == 3)
+            player.setHealth(player.getMaxHealth()); // 100%
     }
 
     @Override

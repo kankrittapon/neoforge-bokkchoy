@@ -45,9 +45,13 @@ public class RPGEasyMode {
         // Register the Deferred Register to the mod event bus so custom attributes get
         // registered
         net.kankrittapon.rpgem.init.ModAttributes.register(modEventBus);
+        // Register Data Components
+        net.kankrittapon.rpgem.init.ModDataComponents.register(modEventBus);
         // Register the Deferred Register to the mod event bus so entities get
         // registered
         net.kankrittapon.rpgem.init.ModEntities.ENTITIES.register(modEventBus);
+        // Register Loot Modifiers
+        net.kankrittapon.rpgem.loot.ModLootModifiers.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         NeoForge.EVENT_BUS.register(this);

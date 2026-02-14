@@ -1,0 +1,16 @@
+{
+  "type": "rpgem:scaled_item",
+  "conditions": [
+    {
+      "condition": "minecraft:entity_properties",
+      "entity": "this",
+      "predicate": {
+        "type": "#minecraft:skeletons" 
+      }
+    }
+  ],
+  "item": "rpgem:upgrade_stone_tier_1",
+  "base_chance": 0.001,
+  "level_multiplier": 0.00018,
+  "looting_multiplier": 0.01
+}

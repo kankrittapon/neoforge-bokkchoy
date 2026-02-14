@@ -1,23 +1,41 @@
 package net.kankrittapon.rpgem.event;
 
 import net.kankrittapon.rpgem.RPGEasyMode;
+import net.kankrittapon.rpgem.init.ModBlocks;
 import net.kankrittapon.rpgem.init.ModMobEffects;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SwordItem;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-
+import net.kankrittapon.rpgem.Config;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @EventBusSubscriber(modid = RPGEasyMode.MODID)
 public class ModEvents {
@@ -26,18 +44,43 @@ public class ModEvents {
         public static void onLivingIncomingDamage(
                         net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
                 if (event.getEntity() instanceof Player player) {
-                        // === EVASION ===
+                        // === EVASION (Stack: rpgem:evasion + apothic_attributes:dodge_chance) ===
                         double evasionChance = player
                                         .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.EVASION);
 
-                        // Hardcoded check for potion effect if attribute is 0?
-                        // Better to let attribute handle it.
-                        // If the Potion gives the attribute, this works.
-                        // If Potion uses old logic, we might miss it.
-                        // Let's add Potion check fallback for now to be safe.
+                        // Accuracy Counter: Subtract attacker's accuracy from victim's evasion
+                        if (event.getSource().getEntity() instanceof LivingEntity attacker) {
+                                double accuracy = attacker
+                                                .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.ACCURACY);
+                                evasionChance = Math.max(0, evasionChance - accuracy);
+                        }
+
+                        // Stack: Apothic Attributes dodge_chance (optional — works without Apothic
+                        // installed)
+                        if (net.kankrittapon.rpgem.Config.ENABLE_APOTHEOSIS_INTEGRATION.get()) {
+                                try {
+                                        net.minecraft.resources.ResourceLocation apothicDodgeRL = net.minecraft.resources.ResourceLocation
+                                                        .fromNamespaceAndPath("apothic_attributes", "dodge_chance");
+                                        net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> apothicDodge = net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE
+                                                        .getHolder(apothicDodgeRL).orElse(null);
+                                        if (apothicDodge != null) {
+                                                double apothicDodgeValue = player.getAttributeValue(apothicDodge);
+                                                evasionChance = Math.min(1.0, evasionChance + apothicDodgeValue);
+                                        }
+                                } catch (Exception ignored) {
+                                        // Apothic Attributes not installed — use rpgem:evasion only
+                                }
+                        }
+
+                        // Potion fallback: If Evasion potion effect but attribute = 0
                         if (player.hasEffect(ModMobEffects.EVASION)) {
                                 evasionChance = Math.max(evasionChance,
                                                 net.kankrittapon.rpgem.Config.DODGE_CHANCE.get());
+                        }
+
+                        // GOD MODE: Minimum 80% Evasion
+                        if (player.hasEffect(ModMobEffects.BOUNDLESS_GRACE)) {
+                                evasionChance = Math.max(evasionChance, 0.8);
                         }
 
                         if (evasionChance > 0 && player.getRandom().nextFloat() < evasionChance) {
@@ -47,54 +90,252 @@ public class ModEvents {
                                 player.displayClientMessage(net.minecraft.network.chat.Component
                                                 .literal("§b<< Dodged! (" + (int) (evasionChance * 100) + "%) >>"),
                                                 true);
+                                return;
+                        }
+
+                        // === SEAL RESIST (Counter: Ragnarok Trait) ===
+                        double sealResist = player
+                                        .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.SEAL_RESIST);
+                        if (player.hasEffect(ModMobEffects.BOUNDLESS_GRACE))
+                                sealResist = 1.0; // Potion T3 = 100% Seal Resist
+
+                        if (sealResist > 0) {
+                                // Check if player is about to be "Sealed" by Ragnarok trait (hypothetical
+                                // event/effect)
+                                // Since we don't have L2H API, we can hook into common sealing triggers
                         }
                 }
         }
 
         @SubscribeEvent
         public static void onLivingDamage(LivingDamageEvent.Pre event) {
-                // === PLAYER ATTACKING (Crit, Element Damage) ===
-                if (event.getSource().getEntity() instanceof Player attacker) {
-                        // 1. Critical Chance
-                        double critChance = attacker
-                                        .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.CRIT_CHANCE);
-                        if (critChance > 0 && attacker.getRandom().nextFloat() < critChance) {
-                                event.setNewDamage(event.getOriginalDamage() * 2.0f); // Double Damage
-                                attacker.level().playSound(null, attacker.blockPosition(),
-                                                SoundEvents.PLAYER_ATTACK_CRIT,
-                                                SoundSource.PLAYERS, 1.0f, 1.0f);
-                                attacker.displayClientMessage(
-                                                net.minecraft.network.chat.Component.literal("§c<< CRITICAL HIT! >>"),
-                                                true);
+                // GLOBAL DEBUG to check if event fires
+                if (event.getEntity() != null
+                                && event.getSource().getEntity() instanceof net.minecraft.world.entity.player.Player) {
+                        System.out.println("DEBUG: ModEvents.onLivingDamage fired! Target: "
+                                        + event.getEntity().getName().getString());
+                }
+
+                net.minecraft.world.damagesource.DamageSource source = event.getSource();
+                Entity attacker = source.getEntity();
+
+                double criticalChance = 0.0;
+                double armorPen = 0.0; // % Max Health Damage Cap (config)
+
+                if (attacker instanceof LivingEntity livingAttacker) {
+                        if (event.getEntity() instanceof LivingEntity victim) {
+                                // 1. Armor Penetration
+                                armorPen = livingAttacker
+                                                .getAttributeValue(
+                                                                net.kankrittapon.rpgem.init.ModAttributes.ARMOR_PENETRATION);
+                                if (armorPen > 0) {
+                                        float currentDamage = event.getNewDamage();
+                                        float victimArmor = victim.getArmorValue();
+                                        float bonusDamage = victimArmor * (float) armorPen;
+
+                                        // Apply Damage Cap
+                                        double cap = Config.ARMOR_PENETRATION_CAP.get();
+                                        if (bonusDamage > cap) {
+                                                bonusDamage = (float) cap;
+                                        }
+
+                                        float newDamage = currentDamage + bonusDamage;
+                                        event.setNewDamage(newDamage);
+
+                                        if (livingAttacker.level() instanceof ServerLevel sl) {
+                                                sl.sendParticles(ParticleTypes.CRIT, victim.getX(), victim.getY() + 1.0,
+                                                                victim.getZ(), 5, 0.3, 0.3, 0.3, 0.05);
+                                        }
+                                }
+
+                                // --- FATE SEAL (Undying Counter) ---
+                                double antiHeal = livingAttacker
+                                                .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.ANTI_HEAL);
+                                boolean isGodMode = livingAttacker.hasEffect(ModMobEffects.BOUNDLESS_GRACE);
+                                boolean canExecute = isGodMode || antiHeal >= 0.5;
+
+                                // DEBUG: Check values (Unconditional for Players)
+                                if (livingAttacker instanceof net.minecraft.world.entity.player.Player) {
+                                        System.out.println("DEBUG: Fate Seal Check");
+                                        System.out.println(" - Attacker: " + livingAttacker.getName().getString());
+                                        System.out.println(" - Victim HP: " + victim.getHealth() + "/"
+                                                        + victim.getMaxHealth() + " ("
+                                                        + (victim.getHealth() / victim.getMaxHealth()) + ")");
+                                        System.out.println(" - isGodMode: " + isGodMode);
+                                        System.out.println(" - antiHeal: " + antiHeal);
+                                        System.out.println(" - canExecute: " + canExecute);
+                                        System.out.println(" - Threshold From Config: "
+                                                        + net.kankrittapon.rpgem.Config.FATE_SEAL_THRESHOLD.get());
+                                        System.out.println(" - Chance From Config: "
+                                                        + net.kankrittapon.rpgem.Config.FATE_SEAL_CHANCE.get());
+                                }
+
+                                if (canExecute && (victim.getHealth() / victim
+                                                .getMaxHealth() < net.kankrittapon.rpgem.Config.FATE_SEAL_THRESHOLD
+                                                                .get())) {
+
+                                        if (!event.getSource().is(
+                                                        net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD)) {
+
+                                                // Check Chance
+                                                if (livingAttacker.getRandom()
+                                                                .nextDouble() < net.kankrittapon.rpgem.Config.FATE_SEAL_CHANCE
+                                                                                .get()) {
+                                                        System.out.println("DEBUG: Fate Seal TRIGGERED (Success)!");
+
+                                                        if (!victim.level().isClientSide()) {
+                                                                // STRATEGY 0: Nuke Undying Trait from NBT
+                                                                net.minecraft.nbt.CompoundTag nbt = new net.minecraft.nbt.CompoundTag();
+                                                                victim.saveWithoutId(nbt);
+                                                                if (nbt.contains("neoforge:attachments")) {
+                                                                        net.minecraft.nbt.CompoundTag attachments = nbt
+                                                                                        .getCompound("neoforge:attachments");
+                                                                        if (attachments.contains("l2hostility:mob")) {
+                                                                                net.minecraft.nbt.CompoundTag hostility = attachments
+                                                                                                .getCompound("l2hostility:mob");
+                                                                                if (hostility.contains("traits")) {
+                                                                                        net.minecraft.nbt.CompoundTag traits = hostility
+                                                                                                        .getCompound("traits");
+                                                                                        if (traits.contains(
+                                                                                                        "l2hostility:undying")) {
+                                                                                                traits.remove("l2hostility:undying");
+                                                                                                victim.load(nbt);
+                                                                                                System.out.println(
+                                                                                                                "DEBUG: Removed Undying Trait via NBT!");
+                                                                                        }
+                                                                                }
+                                                                        }
+                                                                }
+                                                        }
+
+                                                        // STRATEGY 1: Strip All Effects (Remove Buffs)
+                                                        victim.removeAllEffects();
+
+                                                        // STRATEGY 2: Remove Held Items (Totem of Undying)
+                                                        victim.setItemInHand(
+                                                                        net.minecraft.world.InteractionHand.MAIN_HAND,
+                                                                        net.minecraft.world.item.ItemStack.EMPTY);
+                                                        victim.setItemInHand(
+                                                                        net.minecraft.world.InteractionHand.OFF_HAND,
+                                                                        net.minecraft.world.item.ItemStack.EMPTY);
+
+                                                        // STRATEGY 3: Force Death
+                                                        victim.setHealth(0f);
+                                                        event.setNewDamage(0f); // Cancel physical damage
+
+                                                        // STRATEGY 4: Void Damage (Execution)
+                                                        victim.hurt(livingAttacker.damageSources().fellOutOfWorld(),
+                                                                        Float.MAX_VALUE); // Apply Void Death
+
+                                                        if (victim.level() instanceof ServerLevel serverLevel) {
+                                                                serverLevel.sendParticles(ParticleTypes.SONIC_BOOM,
+                                                                                victim.getX(), victim.getY() + 1.0,
+                                                                                victim.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
+                                                                livingAttacker.level().playSound(null,
+                                                                                victim.blockPosition(),
+                                                                                SoundEvents.WARDEN_SONIC_BOOM,
+                                                                                SoundSource.PLAYERS, 1.0f, 1.0f);
+                                                        }
+                                                        if (livingAttacker instanceof Player player) {
+                                                                player.displayClientMessage(
+                                                                                net.minecraft.network.chat.Component
+                                                                                                .literal("§5<< FATE SEAL >>"),
+                                                                                true);
+                                                        }
+                                                        return;
+                                                } else {
+                                                        System.out.println("DEBUG: Fate Seal MISSED (RNG)!");
+                                                }
+                                        }
+                                }
                         }
 
-                        // 2. Element Damage
-                        double elementDmg = attacker
+                        // 3. Critical Chance
+                        double critChance = livingAttacker
+                                        .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.CRIT_CHANCE);
+                        if (critChance > 0 && livingAttacker.getRandom().nextFloat() < critChance) {
+                                event.setNewDamage(event.getOriginalDamage() * 2.0f);
+                                livingAttacker.level().playSound(null, livingAttacker.blockPosition(),
+                                                SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
+                                if (livingAttacker instanceof Player player) {
+                                        player.displayClientMessage(net.minecraft.network.chat.Component
+                                                        .literal("§c<< CRITICAL HIT! >>"), true);
+                                }
+                        }
+
+                        // 4. Element Damage / God of Element
+                        double elementDmg = livingAttacker
                                         .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.ELEMENT_DAMAGE);
-                        if (elementDmg > 0) {
-                                float damage = event.getNewDamage(); // Get current damage (potentially crit)
-                                event.setNewDamage(damage * (1.0f + (float) elementDmg));
-                                // Optional: Particle effect for magic damage?
+                        boolean isGodMode = livingAttacker.hasEffect(ModMobEffects.BOUNDLESS_GRACE);
+
+                        if (isGodMode || elementDmg > 0) {
+                                if (event.getEntity() instanceof LivingEntity victim) {
+                                        float currentDamage = event.getNewDamage();
+                                        if (elementDmg > 0) {
+                                                event.setNewDamage(currentDamage * (1.0f + (float) elementDmg));
+                                        }
+
+                                        if (isGodMode) {
+                                                // ... God Mode Effects ...
+                                                victim.setRemainingFireTicks(100);
+                                                victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60,
+                                                                2));
+                                                victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 1));
+                                                victim.knockback(1.5f, attacker.getX() - victim.getX(),
+                                                                attacker.getZ() - victim.getZ());
+                                                event.setNewDamage(event.getNewDamage() + 10.0f);
+
+                                                if (attacker.level() instanceof ServerLevel sl) {
+                                                        sl.sendParticles(ParticleTypes.ENCHANTED_HIT, victim.getX(),
+                                                                        victim.getY() + 1.0, victim.getZ(), 10, 0.5,
+                                                                        0.5, 0.5, 0.1);
+                                                        sl.sendParticles(ParticleTypes.FLAME, victim.getX(),
+                                                                        victim.getY() + 1.0, victim.getZ(), 5, 0.5, 0.5,
+                                                                        0.5, 0.1);
+                                                }
+                                        } else {
+                                                // ... Normal Element Cycle ...
+                                                int activeElement = livingAttacker.getPersistentData()
+                                                                .getInt("rpgem:active_element");
+                                                switch (activeElement) {
+                                                        case 0 -> {
+                                                                victim.setRemainingFireTicks(40);
+                                                        }
+                                                        case 1 -> {
+                                                                victim.addEffect(new MobEffectInstance(
+                                                                                MobEffects.MOVEMENT_SPEED, 40, 1));
+                                                        } // Intentionally keeping Speed/Slowness logic from before
+                                                        case 2 -> {
+                                                                victim.addEffect(new MobEffectInstance(
+                                                                                MobEffects.WEAKNESS, 40, 0));
+                                                        }
+                                                        case 3 -> {
+                                                                victim.knockback(0.5f, attacker.getX() - victim.getX(),
+                                                                                attacker.getZ() - victim.getZ());
+                                                        }
+                                                        case 4 -> {
+                                                                event.setNewDamage(event.getNewDamage() + 2.0f);
+                                                        }
+                                                }
+                                        }
+                                }
                         }
                 }
 
                 // === PLAYER DEFENDING (Damage Reduction, Reflect Resist) ===
-                if (event.getEntity() instanceof Player victim) {
-                        // 1. Damage Reduction
+                if (event.getEntity() instanceof
+
+                Player victim) {
                         double dr = victim
                                         .getAttributeValue(net.kankrittapon.rpgem.init.ModAttributes.DAMAGE_REDUCTION);
                         if (dr > 0) {
                                 float damage = event.getNewDamage();
-                                // Cap DR at 80% to prevent invincibility (though attribute max is 1.0)
                                 dr = Math.min(dr, 0.8);
                                 event.setNewDamage(damage * (1.0f - (float) dr));
                         }
-
-                        // 2. Reflect Resist (Only if source is Thorns)
                         if (event.getSource().is(net.minecraft.world.damagesource.DamageTypes.THORNS)) {
-                                double reflectResist = victim
-                                                .getAttributeValue(
-                                                                net.kankrittapon.rpgem.init.ModAttributes.REFLECT_RESIST);
+                                double reflectResist = victim.getAttributeValue(
+                                                net.kankrittapon.rpgem.init.ModAttributes.REFLECT_RESIST);
                                 if (reflectResist > 0) {
                                         float damage = event.getNewDamage();
                                         event.setNewDamage(damage * (1.0f - (float) reflectResist));
@@ -121,7 +362,7 @@ public class ModEvents {
                         Entity attacker = event.getSource().getEntity();
                         float amount = event.getOriginalDamage();
 
-                        // REFLECTION LOGIC (Iron Thorns & Savior)
+                        // REFLECTION LOGIC (Savior V2: 80% Reflect Shield)
                         if (attacker instanceof LivingEntity livingAttacker) {
                                 boolean hasThorns = player.hasEffect(ModMobEffects.IRON_THORNS);
                                 boolean hasSavior = player.hasEffect(ModMobEffects.BOUNDLESS_GRACE);
@@ -130,11 +371,7 @@ public class ModEvents {
                                 if (hasThorns)
                                         reflectChance = net.kankrittapon.rpgem.Config.THORNS_CHANCE.get(); // 10%
                                 if (hasSavior)
-                                        reflectChance = Math.max(reflectChance,
-                                                        net.kankrittapon.rpgem.Config.SAVIOR_REFLECTION_CHANCE.get()); // 25%
-                                                                                                                       // overrides
-                                                                                                                       // if
-                                                                                                                       // higher
+                                        reflectChance = 0.8; // Savior V2: 80% Reflection
 
                                 if (reflectChance > 0 && player.getRandom().nextFloat() < reflectChance) {
                                         float reflectDamage = amount
@@ -142,13 +379,14 @@ public class ModEvents {
                                                                         .floatValue();
                                         livingAttacker.hurt(player.damageSources().thorns(player), reflectDamage);
 
-                                        player.level().playSound(null, player.blockPosition(), SoundEvents.ANVIL_LAND,
+                                        player.level().playSound(null, player.blockPosition(),
+                                                        (net.minecraft.sounds.SoundEvent) SoundEvents.ANVIL_LAND,
                                                         SoundSource.PLAYERS,
                                                         0.5f, 0.5f);
                                         if (hasSavior) {
                                                 player.displayClientMessage(
                                                                 net.minecraft.network.chat.Component.literal(
-                                                                                "§6<< DIVINE REFLECTION! >>"),
+                                                                                "§6<< DIVINE REFLECTION! (80%) >>"),
                                                                 true);
                                         } else {
                                                 player.displayClientMessage(
@@ -179,10 +417,67 @@ public class ModEvents {
         }
 
         @SubscribeEvent
-        public static void onLivingDeath(LivingDeathEvent event) {
-                LivingEntity entity = event.getEntity();
+        public static void onPlayerTick(PlayerTickEvent.Post event) {
+                Player player = event.getEntity();
+                if (player.level().isClientSide())
+                        return;
 
-                if (entity instanceof Player player) {
+                // === SAVIOR AURA V2 ===
+                if (player.hasEffect(ModMobEffects.BOUNDLESS_GRACE)) {
+                        // Apply Evasion Buff (50%) directly via effect or check in damage event
+                        // We also apply Aura to nearby enemies
+                        if (player.level().getGameTime() % 20 == 0) { // Every second
+                                List<Entity> nearby = player.level().getEntities(player,
+                                                player.getBoundingBox().inflate(6.0));
+                                for (Entity e : nearby) {
+                                        if (e instanceof LivingEntity living && !(e instanceof Player)) {
+                                                // 1. Slowness Aura
+                                                living.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40,
+                                                                -5)); // Slowness V
+
+                                                // 2. Soul Purge (Anti-Heal Counter: Undying Trait)
+                                                // Reduces mob regeneration drastically
+                                                living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 2));
+                                                if (net.kankrittapon.rpgem.Config.ENABLE_L2_HOSTILITY_INTEGRATION.get()
+                                                                && living.getPersistentData()
+                                                                                .contains("L2Hostility_Traits")) {
+                                                        // Reduce L2H regeneration if possible via NBT or status
+                                                        living.getPersistentData()
+                                                                        .putFloat("hostility:health_regen_mult", 0.0f);
+                                                }
+
+                                                // Spawn Particles
+                                                ((ServerLevel) player.level()).sendParticles(ParticleTypes.SOUL,
+                                                                living.getX(), living.getY() + 1.5, living.getZ(), 3,
+                                                                0.2, 0.2, 0.2, 0.1);
+                                        }
+                                }
+                        }
+
+                        // === GOD OF ELEMENT (Counter: Adaptive Trait & High HP Mobs) ===
+                        // Instead of cycling, we now trigger ALL elements at once when attacking
+                        // See onLivingDamage for implementation.
+
+                        // Passive Particles (God Mode Aura)
+                        if (player.level() instanceof ServerLevel serverLevel
+                                        && player.level().getGameTime() % 10 == 0) {
+                                serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
+                                                player.getX(), player.getY() + 1.2, player.getZ(),
+                                                3, 0.3, 0.5, 0.3, 0.05);
+                                serverLevel.sendParticles(ParticleTypes.FLAME,
+                                                player.getX(), player.getY() + 0.5, player.getZ(),
+                                                1, 0.3, 0.1, 0.3, 0.02);
+                        }
+                }
+        }
+
+        @SubscribeEvent
+        public static void onLivingDeath(LivingDeathEvent event) {
+                if (event.getEntity().level().isClientSide) {
+                        return;
+                }
+
+                if (event.getEntity() instanceof Player player) {
                         if (player.hasEffect(ModMobEffects.BOUNDLESS_GRACE)) {
                                 // Prevent Death
                                 event.setCanceled(true);
@@ -228,73 +523,139 @@ public class ModEvents {
         @SubscribeEvent
         public static void onItemAttributeModifier(net.neoforged.neoforge.event.ItemAttributeModifierEvent event) {
                 net.minecraft.world.item.ItemStack stack = event.getItemStack();
-                if (stack.has(net.kankrittapon.rpgem.init.ModDataComponents.UPGRADE_LEVEL.get())) {
-                        int level = stack.get(net.kankrittapon.rpgem.init.ModDataComponents.UPGRADE_LEVEL.get());
+                net.neoforged.neoforge.registries.DeferredHolder<net.minecraft.core.component.DataComponentType<?>, net.minecraft.core.component.DataComponentType<Integer>> upgradeLevelHolder = net.kankrittapon.rpgem.init.ModDataComponents.UPGRADE_LEVEL;
+                if (upgradeLevelHolder.isBound() && stack.has(upgradeLevelHolder.get())) {
+                        int level = stack.get(upgradeLevelHolder.get());
                         if (level > 0) {
-                                boolean isWeapon = stack.getItem() instanceof net.minecraft.world.item.SwordItem
-                                                || stack.getItem() instanceof net.minecraft.world.item.AxeItem;
-                                boolean isArmor = stack.getItem() instanceof net.minecraft.world.item.ArmorItem;
+                                boolean isWeapon = stack.getItem() instanceof SwordItem
+                                                || stack.getItem() instanceof AxeItem;
+                                boolean isArmor = stack.getItem() instanceof ArmorItem;
 
-                                // === WEAPON STATS ===
+                                // === WEAPON STATS (Restructuring for Path) ===
                                 if (isWeapon) {
-                                        // 1. Attack Damage
+                                        // 1. Attack Damage (All Levels)
                                         double damageBonus = 0;
                                         if (level <= 15)
-                                                damageBonus = level * 1.0;
+                                                damageBonus = level * 0.25;
                                         else if (level <= 25)
-                                                damageBonus = 15 + ((level - 15) * 2.0);
+                                                damageBonus = 3.75 + ((level - 15) * 0.75); // Moderate scaling
                                         else
-                                                damageBonus = 15 + 20 + ((level - 25) * 5.0);
+                                                damageBonus = 3.75 + 7.5 + ((level - 25) * 2.0); // Late-game scaling
 
                                         event.addModifier(
                                                         net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
-                                                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                                                        net.minecraft.resources.ResourceLocation
+                                                        new AttributeModifier(
+                                                                        ResourceLocation
                                                                                         .fromNamespaceAndPath(
                                                                                                         RPGEasyMode.MODID,
                                                                                                         "upgrade_damage"),
                                                                         damageBonus,
-                                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                                                                        AttributeModifier.Operation.ADD_VALUE),
                                                         net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
 
-                                        // 2. Life Steal (0.5% per level)
+                                        // 2. Life Steal (Lv 1+)
                                         event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.LIFE_STEAL,
-                                                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                                                        net.minecraft.resources.ResourceLocation
+                                                        new AttributeModifier(
+                                                                        ResourceLocation
                                                                                         .fromNamespaceAndPath(
                                                                                                         RPGEasyMode.MODID,
                                                                                                         "upgrade_life_steal"),
                                                                         level * 0.005,
-                                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                                                                        AttributeModifier.Operation.ADD_VALUE),
                                                         net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
 
-                                        // 3. Crit Chance (1% per level)
-                                        event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.CRIT_CHANCE,
-                                                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                                                        net.minecraft.resources.ResourceLocation
-                                                                                        .fromNamespaceAndPath(
-                                                                                                        RPGEasyMode.MODID,
-                                                                                                        "upgrade_crit_chance"),
-                                                                        level * 0.01,
-                                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
-                                                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+                                        // 3. Crit Chance (Lv 16+)
+                                        if (level >= 16) {
+                                                event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.CRIT_CHANCE,
+                                                                new AttributeModifier(
+                                                                                ResourceLocation
+                                                                                                .fromNamespaceAndPath(
+                                                                                                                RPGEasyMode.MODID,
+                                                                                                                "upgrade_crit_chance"),
+                                                                                (level - 15) * 0.02, // 2% per level
+                                                                                                     // after 15
+                                                                                AttributeModifier.Operation.ADD_VALUE),
+                                                                net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+                                        }
 
-                                        // 4. Element Damage (2% per level)
-                                        event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.ELEMENT_DAMAGE,
-                                                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                                                        net.minecraft.resources.ResourceLocation
-                                                                                        .fromNamespaceAndPath(
+                                        // 4. Element Damage (Lv 26+)
+                                        if (level >= 26) {
+                                                event.addModifier(
+                                                                net.kankrittapon.rpgem.init.ModAttributes.ELEMENT_DAMAGE,
+                                                                new AttributeModifier(
+                                                                                ResourceLocation
+                                                                                                .fromNamespaceAndPath(
+                                                                                                                RPGEasyMode.MODID,
+                                                                                                                "upgrade_element_damage"),
+                                                                                (level - 25) * 0.05, // 5% per level
+                                                                                                     // after 25
+                                                                                AttributeModifier.Operation.ADD_VALUE),
+                                                                net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+                                        }
+
+                                        // === Specialized Stats (Path) ===
+                                        if (level >= 10) {
+                                                // Accuracy (Lv.10+)
+                                                double accuracy = (level - 9) * 0.02;
+                                                event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.ACCURACY,
+                                                                new AttributeModifier(
+                                                                                ResourceLocation.fromNamespaceAndPath(
+                                                                                                RPGEasyMode.MODID,
+                                                                                                "forge_accuracy"),
+                                                                                accuracy,
+                                                                                AttributeModifier.Operation.ADD_VALUE),
+                                                                net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+
+                                                // Armor Penetration (% HP) (Lv.20+)
+                                                if (level >= 20) {
+                                                        double armorPen = (level - 19) * 0.005; // Max 0.05 (5%) at
+                                                                                                // Lv.30
+                                                        event.addModifier(
+                                                                        net.kankrittapon.rpgem.init.ModAttributes.ARMOR_PENETRATION,
+                                                                        new AttributeModifier(
+                                                                                        ResourceLocation.fromNamespaceAndPath(
                                                                                                         RPGEasyMode.MODID,
-                                                                                                        "upgrade_element_damage"),
-                                                                        level * 0.02,
-                                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
-                                                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+                                                                                                        "forge_armor_pen"),
+                                                                                        armorPen,
+                                                                                        AttributeModifier.Operation.ADD_VALUE),
+                                                                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+
+                                                        // Seal Resist (Lv.20+) - Moved from Armor to Weapon per User
+                                                        // Feedback
+                                                        double sealResist = (level - 19) * 0.05; // 5% per level -> Max
+                                                                                                 // 55% at Lv.30
+                                                        event.addModifier(
+                                                                        net.kankrittapon.rpgem.init.ModAttributes.SEAL_RESIST,
+                                                                        new AttributeModifier(
+                                                                                        ResourceLocation.fromNamespaceAndPath(
+                                                                                                        RPGEasyMode.MODID,
+                                                                                                        "forge_seal_resist"),
+                                                                                        sealResist,
+                                                                                        AttributeModifier.Operation.ADD_VALUE),
+                                                                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+                                                }
+
+                                                // Anti-Heal (Lv.25+)
+                                                if (level >= 25) {
+                                                        double antiHeal = (level - 24) * 0.1; // Max 0.6 (60%) at Lv.30
+                                                        event.addModifier(
+                                                                        net.kankrittapon.rpgem.init.ModAttributes.ANTI_HEAL,
+                                                                        new AttributeModifier(
+                                                                                        ResourceLocation.fromNamespaceAndPath(
+                                                                                                        RPGEasyMode.MODID,
+                                                                                                        "forge_anti_heal"),
+                                                                                        antiHeal,
+                                                                                        AttributeModifier.Operation.ADD_VALUE),
+                                                                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND);
+                                                }
+                                        }
                                 }
 
                                 // === ARMOR STATS ===
-                                if (isArmor) {
-                                        // 1. Defense (0.5 per level)
-                                        double armorBonus = level * 0.5;
+                                if (isArmor && net.kankrittapon.rpgem.Config.ENABLE_L2_COMPLEMENTS_BALANCING.get()) {
+                                        // 1. Defense (All Levels)
+                                        double armorBonus = level * 0.25; // Balanced for L2 Complements (Total +30 for
+                                                                          // full set at Lv30)
                                         event.addModifier(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR,
                                                         new net.minecraft.world.entity.ai.attributes.AttributeModifier(
                                                                         net.minecraft.resources.ResourceLocation
@@ -311,7 +672,6 @@ public class ModEvents {
                                                         "none");
 
                                         if (path.equals("reduction")) {
-                                                // DR Path: High DR, High Reflect Resist, High Seal Resist
                                                 event.addModifier(
                                                                 net.kankrittapon.rpgem.init.ModAttributes.DAMAGE_REDUCTION,
                                                                 new net.minecraft.world.entity.ai.attributes.AttributeModifier(
@@ -319,7 +679,7 @@ public class ModEvents {
                                                                                                 .fromNamespaceAndPath(
                                                                                                                 RPGEasyMode.MODID,
                                                                                                                 "upgrade_dr"),
-                                                                                level * 0.005, // 0.5% per level -> 15%
+                                                                                level * 0.015, // 1.5% per level -> 45%
                                                                                                // at Lv30
                                                                                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
                                                                 net.minecraft.world.entity.EquipmentSlotGroup.ARMOR);
@@ -331,40 +691,18 @@ public class ModEvents {
                                                                                                 .fromNamespaceAndPath(
                                                                                                                 RPGEasyMode.MODID,
                                                                                                                 "upgrade_reflect_resist"),
-                                                                                level * 0.02, // 2% per level
+                                                                                level * 0.03, // 3% per level
                                                                                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
                                                                 net.minecraft.world.entity.EquipmentSlotGroup.ARMOR);
-
-                                                event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.SEAL_RESIST,
-                                                                new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                                                                net.minecraft.resources.ResourceLocation
-                                                                                                .fromNamespaceAndPath(
-                                                                                                                RPGEasyMode.MODID,
-                                                                                                                "upgrade_seal_resist"),
-                                                                                level * 0.02, // 2% per level
-                                                                                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
-                                                                net.minecraft.world.entity.EquipmentSlotGroup.ARMOR);
-
                                         } else if (path.equals("evasion")) {
-                                                // Evasion Path: High Evasion, Mod Seal/Reflect
                                                 event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.EVASION,
                                                                 new net.minecraft.world.entity.ai.attributes.AttributeModifier(
                                                                                 net.minecraft.resources.ResourceLocation
                                                                                                 .fromNamespaceAndPath(
                                                                                                                 RPGEasyMode.MODID,
                                                                                                                 "upgrade_evasion"),
-                                                                                level * 0.01, // 1% per level -> 30% at
-                                                                                              // Lv30 (can stack to cap)
-                                                                                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
-                                                                net.minecraft.world.entity.EquipmentSlotGroup.ARMOR);
-
-                                                event.addModifier(net.kankrittapon.rpgem.init.ModAttributes.SEAL_RESIST,
-                                                                new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                                                                net.minecraft.resources.ResourceLocation
-                                                                                                .fromNamespaceAndPath(
-                                                                                                                RPGEasyMode.MODID,
-                                                                                                                "upgrade_seal_resist"),
-                                                                                level * 0.01, // 1% per level
+                                                                                level * 0.015, // 1.5% per level -> 45%
+                                                                                               // at Lv30
                                                                                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
                                                                 net.minecraft.world.entity.EquipmentSlotGroup.ARMOR);
                                         }
@@ -383,17 +721,8 @@ public class ModEvents {
                                                         net.kankrittapon.rpgem.init.ModItems.UPGRADE_STONE_TIER_1
                                                                         .get())));
 
-                        // Tier 2 Stone (50% Chance + Looting)
-                        int looting = 0;
-                        if (event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker) {
-                                // looting =
-                                // net.minecraft.world.item.enchantment.EnchantmentHelper.getMobLooting(attacker);
-                                // MVP: Hardcode looting effect or ignore for now to avoid complexity with 1.21
-                                // changes
-                                looting = 0;
-                        }
-
-                        if (event.getEntity().getRandom().nextFloat() < 0.5f + (looting * 0.1f)) {
+                        // Tier 2 Stone (50% Chance)
+                        if (event.getEntity().getRandom().nextFloat() < 0.5f) {
                                 event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
                                                 event.getEntity().level(),
                                                 event.getEntity().getX(), event.getEntity().getY(),
@@ -410,15 +739,8 @@ public class ModEvents {
                                                         net.kankrittapon.rpgem.init.ModItems.UPGRADE_STONE_TIER_2
                                                                         .get())));
 
-                        // Tier 3 Stone (30% Chance + Looting)
-                        int looting = 0;
-                        if (event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker) {
-                                // looting =
-                                // net.minecraft.world.item.enchantment.EnchantmentHelper.getMobLooting(attacker);
-                                looting = 0;
-                        }
-
-                        if (event.getEntity().getRandom().nextFloat() < 0.3f + (looting * 0.1f)) {
+                        // Tier 3 Stone (30% Chance)
+                        if (event.getEntity().getRandom().nextFloat() < 0.3f) {
                                 event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
                                                 event.getEntity().level(),
                                                 event.getEntity().getX(), event.getEntity().getY(),
@@ -427,6 +749,113 @@ public class ModEvents {
                                                                 net.kankrittapon.rpgem.init.ModItems.UPGRADE_STONE_TIER_3
                                                                                 .get())));
                         }
+                } else {
+                        // === APOTHEOSIS BOSS DROPS ===
+                        if (net.kankrittapon.rpgem.Config.ENABLE_APOTHEOSIS_INTEGRATION.get()) {
+                                LivingEntity entity = event.getEntity();
+                                if (entity.getPersistentData().contains("apotheosis:boss") ||
+                                                entity.getPersistentData().contains("apotheosis:is_boss")) {
+
+                                        // Tier 2/3 Stone for Apotheosis Bosses
+                                        if (entity.getRandom().nextFloat() < 0.2f) { // 20% Chance for Apotheosis Bosses
+                                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                                entity.level(), entity.getX(), entity.getY(),
+                                                                entity.getZ(),
+                                                                new net.minecraft.world.item.ItemStack(
+                                                                                net.kankrittapon.rpgem.init.ModItems.UPGRADE_STONE_TIER_2
+                                                                                                .get())));
+                                        }
+                                }
+                        }
+                }
+        }
+
+        @SubscribeEvent
+        public static void onLivingDeathApocalypse(LivingDeathEvent event) {
+                if (event.getEntity().level().isClientSide) {
+                        return;
+                }
+
+                if (event.getEntity() instanceof net.minecraft.world.entity.monster.Zombie zombie
+                                && !(zombie instanceof net.minecraft.world.entity.monster.ZombifiedPiglin)) {
+                        if (event.getEntity().level().random.nextFloat() < 0.05f) { // 5% Chance
+                                ServerLevel level = (ServerLevel) event.getEntity().level();
+                                // Spawn Horde
+                                for (int i = 0; i < 10; i++) {
+                                        net.minecraft.world.entity.monster.Zombie reinforcement = net.minecraft.world.entity.EntityType.ZOMBIE
+                                                        .create(level);
+                                        if (reinforcement != null) {
+                                                reinforcement.setPos(
+                                                                zombie.getX() + (level.random.nextDouble() - 0.5) * 5,
+                                                                zombie.getY(),
+                                                                zombie.getZ() + (level.random.nextDouble() - 0.5) * 5);
+                                                level.addFreshEntity(reinforcement);
+                                        }
+                                }
+                                // Notify players nearby? (Optional)
+                        }
+                } else if (event.getEntity() instanceof net.minecraft.world.entity.monster.Skeleton skeleton) {
+                        if (event.getEntity().level().random.nextFloat() < 0.05f) { // 5% Chance
+                                ServerLevel level = (ServerLevel) event.getEntity().level();
+                                // Spawn Skeleton Horseman
+                                net.minecraft.world.entity.animal.horse.SkeletonHorse horse = net.minecraft.world.entity.EntityType.SKELETON_HORSE
+                                                .create(level);
+                                net.minecraft.world.entity.monster.Skeleton rider = net.minecraft.world.entity.EntityType.SKELETON
+                                                .create(level);
+                                if (horse != null && rider != null) {
+                                        horse.setPos(skeleton.getX(), skeleton.getY(), skeleton.getZ());
+                                        horse.setTamed(true);
+
+                                        rider.setPos(skeleton.getX(), skeleton.getY(), skeleton.getZ());
+                                        // Gear
+                                        rider.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                                                        new ItemStack(net.minecraft.world.item.Items.BOW));
+                                        rider.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
+                                                        new ItemStack(net.minecraft.world.item.Items.DIAMOND_HELMET));
+                                        rider.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(
+                                                        net.minecraft.world.item.Items.DIAMOND_CHESTPLATE));
+
+                                        rider.startRiding(horse);
+                                        level.addFreshEntity(horse);
+                                        level.addFreshEntity(rider);
+                                }
+                        }
+                } else if (event.getEntity() instanceof net.minecraft.world.entity.monster.EnderMan enderman) {
+                        if (event.getEntity().level().random.nextFloat() < 0.05f) { // 5% Chance
+                                ServerLevel level = (ServerLevel) event.getEntity().level();
+                                // Spawn Swarm
+                                for (int i = 0; i < 5; i++) {
+                                        net.minecraft.world.entity.monster.EnderMan reinforcement = net.minecraft.world.entity.EntityType.ENDERMAN
+                                                        .create(level);
+                                        if (reinforcement != null) {
+                                                reinforcement.setPos(
+                                                                enderman.getX() + (level.random.nextDouble() - 0.5) * 8,
+                                                                enderman.getY(),
+                                                                enderman.getZ() + (level.random.nextDouble() - 0.5)
+                                                                                * 8);
+                                                level.addFreshEntity(reinforcement);
+                                        }
+                                }
+                        }
+                }
+        }
+
+        @SubscribeEvent
+        public static void onVillagerTrades(net.neoforged.neoforge.event.village.VillagerTradesEvent event) {
+                if (event.getType() == net.minecraft.world.entity.npc.VillagerProfession.CLERIC) {
+                        // Level 5 (Master)
+                        var trades = event.getTrades().get(5);
+
+                        trades.add((pTrader, pRandom) -> new net.minecraft.world.item.trading.MerchantOffer(
+                                        new net.minecraft.world.item.trading.ItemCost(
+                                                        net.minecraft.world.item.Items.EMERALD_BLOCK, 32),
+                                        java.util.Optional.of(new net.minecraft.world.item.trading.ItemCost(
+                                                        net.minecraft.world.item.Items.DIAMOND_BLOCK, 10)),
+                                        new ItemStack(net.kankrittapon.rpgem.init.ModItems.ETHERNAL_BOTTLE.get()),
+                                        3, // Max uses
+                                        30, // XP
+                                        0.05f // Price multiplier
+                        ));
                 }
         }
 }

@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -43,10 +44,15 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
             return switch (slot) {
                 case 0 -> stack.getItem() == ModItems.ETHERNAL_BOTTLE.get() ||
                         stack.getItem() == ModItems.INFINITE_POTION_TIER_1.get() ||
-                        stack.getItem() == ModItems.INFINITE_POTION_TIER_2.get();
+                        stack.getItem() == ModItems.INFINITE_POTION_TIER_2.get() ||
+                        stack.getItem() == ModItems.UPGRADE_STONE_TIER_2.get() ||
+                        stack.getItem() == ModItems.FORGED_STONE_FORTITUDE.get() ||
+                        stack.getItem() == ModItems.FORGED_STONE_AGILITY.get() ||
+                        stack.getItem() == ModItems.FORGED_STONE_DESTRUCTION.get();
                 case 1, 2, 3 -> stack.getItem() == ModItems.ZOMBIE_HEART.get() ||
                         stack.getItem() == ModItems.BONE_OF_MAZE.get() ||
-                        stack.getItem() == ModItems.COSMIC_EMERALD.get();
+                        stack.getItem() == ModItems.COSMIC_EMERALD.get() ||
+                        stack.getItem() == ModItems.UPGRADE_STONE_TIER_3.get();
                 case 4 -> false; // Output slot
                 default -> super.isItemValid(slot, stack);
             };
@@ -187,25 +193,34 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
 
         CraftingContext ctx = getCraftingContext(input, ingredients);
         if (ctx != null) {
-            String ingredientName = getIngredientName(ctx.ingredientUsed);
+            // Special Case: Potion Ingredient History
+            if (ctx.outputItem instanceof net.kankrittapon.rpgem.item.SequentialInfinitePotion) {
+                String ingredientName = getIngredientName(ctx.ingredientUsed);
+                ItemStack newResult = new ItemStack(ctx.outputItem);
+                applyUsedIngredients(newResult, ctx.previousUsed, ingredientName);
+
+                // Result slot handling
+                ItemStack resultStack = itemHandler.getStackInSlot(4);
+                if (resultStack.isEmpty()) {
+                    itemHandler.setStackInSlot(4, newResult);
+                } else {
+                    resultStack.grow(1);
+                }
+            } else {
+                // Forged Stone Handling
+                ItemStack resultStack = itemHandler.getStackInSlot(4);
+                if (resultStack.isEmpty()) {
+                    itemHandler.setStackInSlot(4, new ItemStack(ctx.outputItem));
+                } else {
+                    resultStack.grow(1);
+                }
+            }
 
             // Consume Input
             input.shrink(1);
 
             // Consume Ingredient
             ctx.ingredientUsed.shrink(1);
-
-            // Produce Result
-            ItemStack resultStack = itemHandler.getStackInSlot(4);
-            if (resultStack.isEmpty()) {
-                ItemStack newResult = new ItemStack(ctx.outputItem);
-                applyUsedIngredients(newResult, ctx.previousUsed, ingredientName);
-                itemHandler.setStackInSlot(4, newResult);
-            } else {
-                // Should technically invoke same logic for checking NBT but assuming slot 4 is
-                // cleared or compatible
-                resultStack.grow(1);
-            }
         }
     }
 
@@ -232,8 +247,8 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
         return stack.getItem().toString();
     }
 
-    private record CraftingContext(Item outputItem, int processTime, List<String> previousUsed,
-            ItemStack ingredientUsed) {
+    private record CraftingContext(net.minecraft.world.item.Item outputItem, int processTime, List<String> previousUsed,
+            net.minecraft.world.item.ItemStack ingredientUsed) {
     }
 
     private CraftingContext getCraftingContext(ItemStack input, List<ItemStack> availableIngredients) {
@@ -252,10 +267,11 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
             }
         }
 
-        // TIER DETERMINATION
+        // TIER DETERMINATION (Potion & Forged Stones)
         Item output = null;
         int time = 0;
 
+        // --- Potion Path ---
         if (input.is(ModItems.ETHERNAL_BOTTLE.get())) {
             output = ModItems.INFINITE_POTION_TIER_1.get();
             time = 200;
@@ -265,16 +281,44 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
         } else if (input.is(ModItems.INFINITE_POTION_TIER_2.get())) {
             output = ModItems.INFINITE_POTION_TIER_3.get();
             time = 400;
-        } else {
-            return null;
+        }
+        // --- Forged Stone Path (T2 Stone + Material) ---
+        else if (input.is(ModItems.UPGRADE_STONE_TIER_2.get())) {
+            time = 300;
+            for (ItemStack ing : availableIngredients) {
+                if (ing.is(ModItems.ZOMBIE_HEART.get()))
+                    return new CraftingContext(ModItems.FORGED_STONE_FORTITUDE.get(), time, usedIngredients, ing);
+                if (ing.is(ModItems.BONE_OF_MAZE.get()))
+                    return new CraftingContext(ModItems.FORGED_STONE_AGILITY.get(), time, usedIngredients, ing);
+                if (ing.is(ModItems.COSMIC_EMERALD.get()))
+                    return new CraftingContext(ModItems.FORGED_STONE_DESTRUCTION.get(), time, usedIngredients, ing);
+            }
+        }
+        // --- Ultimate Forged Stone Path (Base Forged + T3 Stone) ---
+        else if (input.is(ModItems.FORGED_STONE_FORTITUDE.get())) {
+            for (ItemStack ing : availableIngredients)
+                if (ing.is(ModItems.UPGRADE_STONE_TIER_3.get()))
+                    return new CraftingContext(ModItems.FORGED_STONE_ULTIMATE_FORTITUDE.get(), 500, usedIngredients,
+                            ing);
+        } else if (input.is(ModItems.FORGED_STONE_AGILITY.get())) {
+            for (ItemStack ing : availableIngredients)
+                if (ing.is(ModItems.UPGRADE_STONE_TIER_3.get()))
+                    return new CraftingContext(ModItems.FORGED_STONE_ULTIMATE_AGILITY.get(), 500, usedIngredients, ing);
+        } else if (input.is(ModItems.FORGED_STONE_DESTRUCTION.get())) {
+            for (ItemStack ing : availableIngredients)
+                if (ing.is(ModItems.UPGRADE_STONE_TIER_3.get()))
+                    return new CraftingContext(ModItems.FORGED_STONE_ULTIMATE_DESTRUCTION.get(), 500, usedIngredients,
+                            ing);
         }
 
-        // Find FIRST valid unique ingredient
+        if (output == null)
+            return null;
+
+        // Final check for Potion unique ingredients
         for (ItemStack ing : availableIngredients) {
             if (!ing.isEmpty()) {
                 String name = getIngredientName(ing);
                 if (!usedIngredients.contains(name)) {
-                    // Found valid ingredient
                     return new CraftingContext(output, time, usedIngredients, ing);
                 }
             }
@@ -289,6 +333,14 @@ public class AlchemyTableBlockEntity extends BlockEntity implements MenuProvider
 
     private void increaseCraftingProgress() {
         this.progress++;
+    }
+
+    public int getProgress() {
+        return this.progress;
+    }
+
+    public int getMaxProgress() {
+        return this.maxProgress;
     }
 
     private boolean hasProgressFinished() {

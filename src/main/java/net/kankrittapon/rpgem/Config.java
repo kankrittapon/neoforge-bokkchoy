@@ -62,5 +62,32 @@ public class Config {
                         .comment("Base success rate for Tier 3 upgrades (Final). Default: 0.1 (10%)")
                         .defineInRange("upgradeSuccessRateTier3", 0.1, 0.0, 1.0);
 
+        public static final ModConfigSpec.DoubleValue ARMOR_PENETRATION_CAP = BUILDER
+                        .comment("Max damage dealt by Armor Penetration per hit. Default: 1000.0")
+                        .defineInRange("armorPenetrationCap", 1000.0, 0.0, 1000000.0);
+
+        public static final ModConfigSpec.DoubleValue FATE_SEAL_CHANCE = BUILDER
+                        .comment("Chance for Fate Seal to trigger when conditions are met (0.0 - 1.0). Default: 0.5 (50%)")
+                        .defineInRange("fateSealChance", 0.5, 0.0, 1.0);
+
+        public static final ModConfigSpec.DoubleValue FATE_SEAL_THRESHOLD = BUILDER
+                        .comment("HP threshold ratio for Fate Seal to trigger (0.0 - 1.0). Default: 0.15 (15%)")
+                        .defineInRange("fateSealThreshold", 0.15, 0.0, 1.0);
+
+        // ==========================================
+        // Integration Settings (Mod Compatibility)
+        // ==========================================
+        public static final ModConfigSpec.BooleanValue ENABLE_APOTHEOSIS_INTEGRATION = BUILDER
+                        .comment("Enable integration with Apotheosis (Boss Loot, Elite Drops). Default: true")
+                        .define("enableApotheosisIntegration", true);
+
+        public static final ModConfigSpec.BooleanValue ENABLE_L2_HOSTILITY_INTEGRATION = BUILDER
+                        .comment("Enable integration with L2 Hostility (Level-based Drop Scaling). Default: true")
+                        .define("enableL2HostilityIntegration", true);
+
+        public static final ModConfigSpec.BooleanValue ENABLE_L2_COMPLEMENTS_BALANCING = BUILDER
+                        .comment("Enable balancing logic for L2 Complements (Evasion/Seal Resist). Default: true")
+                        .define("enableL2ComplementsBalancing", true);
+
         static final ModConfigSpec SPEC = BUILDER.build();
 }

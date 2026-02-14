@@ -1,0 +1,14 @@
+{
+  "type": "rpgem:add_item",
+  "conditions": [
+    {
+      "condition": "minecraft:entity_properties",
+      "entity": "this",
+      "predicate": {
+        "type": "minecraft:skeleton"
+      }
+    }
+  ],
+  "item": "rpgem:bone_of_maze",
+  "chance": 0.0005
+}

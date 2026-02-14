@@ -25,5 +25,15 @@
   "attribute.rpgem.damage_reduction": "Damage Reduction",
   "attribute.rpgem.evasion": "Evasion",
   "attribute.rpgem.reflect_resist": "Reflect Resist",
-  "attribute.rpgem.seal_resist": "Seal Resist"
+  "attribute.rpgem.seal_resist": "Seal Resist",
+  "attribute.rpgem.accuracy": "Accuracy",
+  "attribute.rpgem.anti_heal": "Anti-Heal (Soul Purge)",
+  "attribute.rpgem.armor_penetration": "Armor Penetration",
+  "tooltip.rpgem.alchemy_table.progress": "Progress: %s%%",
+  "tooltip.rpgem.alchemy_table.idle": "Status: Idle",
+  "tooltip.rpgem.ancient_forge.ready": "Ready to Upgrade",
+  "tooltip.rpgem.ancient_forge.needs_stone": "Waiting for Stone",
+  "tooltip.rpgem.ancient_forge.idle": "Status: Idle",
+  "config.jade.plugin_rpgem.ancient_forge": "Ancient Forge Tooltips",
+  "config.jade.plugin_rpgem.alchemy_table": "Alchemy Table Tooltips"
 }

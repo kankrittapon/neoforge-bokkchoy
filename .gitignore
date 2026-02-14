@@ -32,4 +32,5 @@ build_debug.log
 build_gui.log
 
 # vscode
-.vscode
+.vscode.vs/
+logs/
