@@ -1,6 +1,6 @@
 # Roadmap: RPGEasyMode (Antigravity RPG)
 
-> **อัปเดตล่าสุด:** 15 ก.พ. 2026 (00:25 ICT)  
+> **อัปเดตล่าสุด:** 15 ก.พ. 2026 (15:20 ICT)  
 > **Platform:** NeoForge 1.21.1  
 > แผนพัฒนาทั้งหมดของ Mod — จัดรวมจาก Source Code + NotebookLM Research + แผนผู้พัฒนา + Trait Counter System Design  
 > **Mod Ecosystem:** ทำงานร่วมกับ **Apotheosis + L2 Hostility + L2 Complements + L2 Library**
@@ -245,16 +245,21 @@ Fairy Companion = Entity ตัวเล็กบินตามผู้เล�
 
 ---
 
-## ⚫ Phase 7: RPG Core & Polish 🔲
+## 🔵 Phase 8: RPG Core Systems (กำลังดำเนินงาน)
 
-> _ระยะยาว — ระบบ RPG เชิงลึก_
+> _ระบบพื้นฐาน RPG: UI และ Attribute Display_
 
-- [ ] **Player Stats System:** Strength, Intelligence, Agility → เชื่อมกับ Item + Fairy
-- [ ] **Player Stats UI:** หน้าจอแสดงสถานะรวม
-- [ ] **Dynamic Alchemy Leveling:** ยิ่งทำ Potion มาก → ผลลัพธ์ดีขึ้น
-- [ ] **Quest System:** ภารกิจพื้นฐาน (Kill Mobs, Craft Items, Find Materials)
-- [ ] **Custom Recipe JSON (Datapack):** ย้ายสูตร Alchemy จาก Hardcode → JSON
-- [ ] **Tome of Forgotten Table:** ออกแบบ Logic (อาจเป็นระบบ Enchant/Disenchant)
+- [x] **Player Stats Overlay (HUD):** แสดงค่าสถานะพื้นฐานบนหน้าจอ (Configurable, Default OFF) - _Implemented_
+- [x] **Character Status GUI:** หน้าต่างกดปุ่ม 'K' เพื่อดูค่าสถานะละเอียด (Evasion, Armor Pen, etc.) - _Implemented_
+- [x] **Reforger System Refactor:**
+  - **Durability:** Logic การพัง (Broken State) และการซ่อม (Memory Fragment) - _Implemented_
+  - **Fail Stack:** ระบบสะสมความล้มเหลวเพื่อเพิ่มโอกาสติด (1% per Stack) - _Implemented_
+  - **Visuals:** ชื่อไอเท็มเปลี่ยนตาม Tier (`[+1]`, `[PRI]`, `[PEN]`) - _Implemented_
+  - **Protection:** Protection Stone & Artisan's Memory - _Implemented_
+- [x] **Infinite Potion Quest:**
+  - **System:** Grind-based Quest หา Fragments เพื่อแลก Potion ถาวร - _Implemented_
+  - **Key Item:** `Eternal Bottle` (Required to start quest)
+  - **Tiers:** T1 (Heart), T2 (Bone), T3 (Cosmic Emerald)
 
 ---
 
@@ -268,7 +273,8 @@ Fairy Companion = Entity ตัวเล็กบินตามผู้เล�
 | Phase 4: Familia System                | 🔲 ยังไม่เริ่ม | 0% (มี Research แล้ว)                          |
 | Phase 5: Mod Ecosystem (Apotheosis+L2) | ✅ เสร็จ       | 100% (Basic Integration ✅, Core balancing ✅) |
 | Phase 6: Special Mobs & NPCs           | 🔲 ยังไม่เริ่ม | 0% (มีโครงร่าง)                                |
-| Phase 7: RPG Core & Polish             | 🔲 ยังไม่เริ่ม | 0%                                             |
+| Phase 7: Spawn Rules (Cleanup)         | ✅ เสร็จ       | 100% (Implemented Biome Modifiers)             |
+| Phase 8: RPG Core Systems              | 🔵 กำลังทำ     | 95% (HUD Configurable, Attributes Exposed)     |
 
 ---
 

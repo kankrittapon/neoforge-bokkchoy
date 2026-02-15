@@ -6,6 +6,7 @@ import net.kankrittapon.rpgem.init.ModCreativeTabs;
 import net.kankrittapon.rpgem.init.ModItems;
 import net.kankrittapon.rpgem.init.ModMenuTypes;
 import net.kankrittapon.rpgem.init.ModMobEffects;
+import net.kankrittapon.rpgem.init.ModVillagers;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
@@ -40,6 +41,7 @@ public class RPGEasyMode {
         ModBlockEntities.register(modEventBus);
         // Register the Deferred Register to the mod event bus so menus get registered
         ModMenuTypes.register(modEventBus);
+        ModVillagers.register(modEventBus);
         // Register the Deferred Register to the mod event bus so effects get registered
         ModMobEffects.register(modEventBus);
         // Register the Deferred Register to the mod event bus so custom attributes get
@@ -52,6 +54,8 @@ public class RPGEasyMode {
         net.kankrittapon.rpgem.init.ModEntities.ENTITIES.register(modEventBus);
         // Register Loot Modifiers
         net.kankrittapon.rpgem.loot.ModLootModifiers.register(modEventBus);
+        // Register Data Attachments
+        net.kankrittapon.rpgem.init.ModAttachments.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         NeoForge.EVENT_BUS.register(this);
@@ -62,6 +66,7 @@ public class RPGEasyMode {
         // Register our mod's ModConfigSpec so that FML can create and load the config
         // file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

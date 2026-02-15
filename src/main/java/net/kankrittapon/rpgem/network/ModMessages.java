@@ -15,5 +15,10 @@ public class ModMessages {
                 PacketUpgradeItem.TYPE,
                 PacketUpgradeItem.STREAM_CODEC,
                 PacketUpgradeItem::handle);
+
+        registrar.playToClient(
+                PacketSyncFailStack.TYPE,
+                PacketSyncFailStack.STREAM_CODEC,
+                PacketSyncFailStack::handle);
     }
 }

@@ -33,6 +33,10 @@ import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.kankrittapon.rpgem.init.ModVillagers;
+import net.kankrittapon.rpgem.init.ModAttachments;
+import net.kankrittapon.rpgem.init.ModItems;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -367,11 +371,15 @@ public class ModEvents {
                                 boolean hasThorns = player.hasEffect(ModMobEffects.IRON_THORNS);
                                 boolean hasSavior = player.hasEffect(ModMobEffects.BOUNDLESS_GRACE);
 
-                                double reflectChance = 0.0;
+                                double reflectChance = player
+                                                .getAttributeValue(
+                                                                net.kankrittapon.rpgem.init.ModAttributes.REFLECT_CHANCE);
+
                                 if (hasThorns)
-                                        reflectChance = net.kankrittapon.rpgem.Config.THORNS_CHANCE.get(); // 10%
+                                        reflectChance = Math.max(reflectChance,
+                                                        net.kankrittapon.rpgem.Config.THORNS_CHANCE.get());
                                 if (hasSavior)
-                                        reflectChance = 0.8; // Savior V2: 80% Reflection
+                                        reflectChance = Math.max(reflectChance, 0.8); // Savior V2: 80% Reflection
 
                                 if (reflectChance > 0 && player.getRandom().nextFloat() < reflectChance) {
                                         float reflectDamage = amount
@@ -714,6 +722,31 @@ public class ModEvents {
         @SubscribeEvent
         public static void onLivingDrops(net.neoforged.neoforge.event.entity.living.LivingDropsEvent event) {
                 if (event.getEntity() instanceof net.kankrittapon.rpgem.entity.custom.ZombieKing) {
+                        // 1. Fragment (Common - 50%)
+                        if (event.getEntity().getRandom().nextFloat() < 0.5f) {
+                                int count = 1 + event.getEntity().getRandom().nextInt(3); // 1-3
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.PIECE_OF_HEART
+                                                                                .get(),
+                                                                count)));
+                        }
+
+                        // 2. Big Item (Rare - Config)
+                        if (event.getEntity().getRandom()
+                                        .nextDouble() < net.kankrittapon.rpgem.Config.ZOMBIE_KING_HEART_CHANCE.get()) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.ZOMBIE_HEART
+                                                                                .get())));
+                        }
+
                         // Tier 1 Stone (Guaranteed)
                         event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(event.getEntity().level(),
                                         event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(),
@@ -732,6 +765,31 @@ public class ModEvents {
                                                                                 .get())));
                         }
                 } else if (event.getEntity() instanceof net.kankrittapon.rpgem.entity.custom.SkeletonLord) {
+                        // 1. Fragment (Common - 50%)
+                        if (event.getEntity().getRandom().nextFloat() < 0.5f) {
+                                int count = 1 + event.getEntity().getRandom().nextInt(3); // 1-3
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.PIECE_OF_BONE
+                                                                                .get(),
+                                                                count)));
+                        }
+
+                        // 2. Big Item (Rare - Config)
+                        if (event.getEntity().getRandom()
+                                        .nextDouble() < net.kankrittapon.rpgem.Config.SKELETON_LORD_BONE_CHANCE.get()) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.BONE_OF_MAZE
+                                                                                .get())));
+                        }
+
                         // Tier 2 Stone (Guaranteed)
                         event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(event.getEntity().level(),
                                         event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(),
@@ -747,6 +805,103 @@ public class ModEvents {
                                                 event.getEntity().getZ(),
                                                 new net.minecraft.world.item.ItemStack(
                                                                 net.kankrittapon.rpgem.init.ModItems.UPGRADE_STONE_TIER_3
+                                                                                .get())));
+                        }
+                } else if (event.getEntity() instanceof net.minecraft.world.entity.monster.warden.Warden) {
+                        // 1. Fragment (Common - 50%)
+                        if (event.getEntity().getRandom().nextFloat() < 0.5f) {
+                                int count = 1 + event.getEntity().getRandom().nextInt(3); // 1-3
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.PIECE_OF_COSMIC_EMERALD
+                                                                                .get(),
+                                                                count)));
+                        }
+
+                        // 2. Big Item (Rare - Config)
+                        if (event.getEntity().getRandom()
+                                        .nextDouble() < net.kankrittapon.rpgem.Config.WARDEN_COSMIC_CHANCE.get()) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.COSMIC_EMERALD
+                                                                                .get())));
+                        }
+                } else if (event.getEntity() instanceof net.minecraft.world.entity.monster.Zombie) {
+                        // Zombie (Normal)
+                        // 1. Fragment (Common - 25%)
+                        if (event.getEntity().getRandom().nextFloat() < 0.25f) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.PIECE_OF_HEART
+                                                                                .get())));
+                        }
+                        // 2. Big Item (Rare - Config)
+                        if (event.getEntity().getRandom()
+                                        .nextDouble() < net.kankrittapon.rpgem.Config.ZOMBIE_HEART_CHANCE
+                                                        .get()) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.ZOMBIE_HEART
+                                                                                .get())));
+                        }
+                } else if (event.getEntity() instanceof net.minecraft.world.entity.monster.AbstractSkeleton) {
+                        // Skeleton (Normal)
+                        // 1. Fragment (Common - 25%)
+                        if (event.getEntity().getRandom().nextFloat() < 0.25f) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.PIECE_OF_BONE
+                                                                                .get())));
+                        }
+                        // 2. Big Item (Rare - Config)
+                        if (event.getEntity().getRandom()
+                                        .nextDouble() < net.kankrittapon.rpgem.Config.SKELETON_BONE_CHANCE
+                                                        .get()) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.BONE_OF_MAZE
+                                                                                .get())));
+                        }
+                } else if (event.getEntity() instanceof net.minecraft.world.entity.monster.EnderMan
+                                || event.getEntity() instanceof net.minecraft.world.entity.monster.Witch) {
+                        // Enderman / Witch (Normal)
+                        // 1. Fragment (Common - 25%)
+                        if (event.getEntity().getRandom().nextFloat() < 0.25f) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.PIECE_OF_COSMIC_EMERALD
+                                                                                .get())));
+                        }
+                        // 2. Big Item (Rare - Config)
+                        if (event.getEntity().getRandom().nextDouble() < net.kankrittapon.rpgem.Config.MOB_COSMIC_CHANCE
+                                        .get()) {
+                                event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(
+                                                event.getEntity().level(),
+                                                event.getEntity().getX(), event.getEntity().getY(),
+                                                event.getEntity().getZ(),
+                                                new net.minecraft.world.item.ItemStack(
+                                                                net.kankrittapon.rpgem.init.ModItems.COSMIC_EMERALD
                                                                                 .get())));
                         }
                 } else {
@@ -846,16 +1001,214 @@ public class ModEvents {
                         // Level 5 (Master)
                         var trades = event.getTrades().get(5);
 
-                        trades.add((pTrader, pRandom) -> new net.minecraft.world.item.trading.MerchantOffer(
-                                        new net.minecraft.world.item.trading.ItemCost(
-                                                        net.minecraft.world.item.Items.EMERALD_BLOCK, 32),
-                                        java.util.Optional.of(new net.minecraft.world.item.trading.ItemCost(
-                                                        net.minecraft.world.item.Items.DIAMOND_BLOCK, 10)),
-                                        new ItemStack(net.kankrittapon.rpgem.init.ModItems.ETHERNAL_BOTTLE.get()),
-                                        3, // Max uses
-                                        30, // XP
-                                        0.05f // Price multiplier
-                        ));
+                }
+        }
+
+        @SubscribeEvent
+        public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+                if (event.getLevel().isClientSide)
+                        return;
+
+                if (event.getTarget() instanceof net.minecraft.world.entity.npc.Villager villager) {
+                        if (villager.getVillagerData().getProfession() == ModVillagers.ALCHEMIST.get()) {
+                                Player player = event.getEntity();
+                                ItemStack heldItem = player.getMainHandItem();
+
+                                // === 1. FRAGMENT EXCHANGE (100 -> 1 Big Item) ===
+                                if (heldItem.is(ModItems.PIECE_OF_HEART.get())) {
+                                        if (getInventoryItemCount(player, ModItems.PIECE_OF_HEART.get()) >= 100) {
+                                                consumeItemFromInventory(player, ModItems.PIECE_OF_HEART.get(), 100);
+                                                player.addItem(new ItemStack(ModItems.ZOMBIE_HEART.get()));
+                                                playExchangeSound(player);
+                                                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                                                "§6[Alchemist]§e A Zombie Heart! Pure vitality condensed."));
+                                                event.setCanceled(true);
+                                                event.setCancellationResult(InteractionResult.SUCCESS);
+                                                return;
+                                        }
+                                } else if (heldItem.is(ModItems.PIECE_OF_BONE.get())) {
+                                        if (getInventoryItemCount(player, ModItems.PIECE_OF_BONE.get()) >= 100) {
+                                                consumeItemFromInventory(player, ModItems.PIECE_OF_BONE.get(), 100);
+                                                player.addItem(new ItemStack(ModItems.BONE_OF_MAZE.get()));
+                                                playExchangeSound(player);
+                                                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                                                "§6[Alchemist]§e The Bone of Maze... structure and resilience."));
+                                                event.setCanceled(true);
+                                                event.setCancellationResult(InteractionResult.SUCCESS);
+                                                return;
+                                        }
+                                } else if (heldItem.is(ModItems.PIECE_OF_COSMIC_EMERALD.get())) {
+                                        if (getInventoryItemCount(player,
+                                                        ModItems.PIECE_OF_COSMIC_EMERALD.get()) >= 100) {
+                                                consumeItemFromInventory(player, ModItems.PIECE_OF_COSMIC_EMERALD.get(),
+                                                                100);
+                                                player.addItem(new ItemStack(ModItems.COSMIC_EMERALD.get()));
+                                                playExchangeSound(player);
+                                                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                                                "§6[Alchemist]§e A Cosmic Emerald! The energy of the universe."));
+                                                event.setCanceled(true);
+                                                event.setCancellationResult(InteractionResult.SUCCESS);
+                                                return;
+                                        }
+                                }
+
+                                // === 2. POTION INFUSION (Dynamic Upgrade) ===
+                                if (heldItem.is(ModItems.ETHERNAL_BOTTLE.get())
+                                                || heldItem.getItem() instanceof net.kankrittapon.rpgem.item.SequentialInfinitePotion) {
+
+                                        List<String> history = getIngredientHistory(heldItem);
+                                        ItemStack nextPotion = ItemStack.EMPTY;
+
+                                        // Determine Next Tier
+                                        if (heldItem.is(ModItems.ETHERNAL_BOTTLE.get())) {
+                                                nextPotion = new ItemStack(ModItems.INFINITE_POTION_TIER_1.get());
+                                        } else if (heldItem.is(ModItems.INFINITE_POTION_TIER_1.get())) {
+                                                nextPotion = new ItemStack(ModItems.INFINITE_POTION_TIER_2.get());
+                                        } else if (heldItem.is(ModItems.INFINITE_POTION_TIER_2.get())) {
+                                                nextPotion = new ItemStack(ModItems.INFINITE_POTION_TIER_3.get());
+                                        } else {
+                                                // Already Max Tier (Tier 3) -> Cannot upgrade further via this method
+                                                return;
+                                        }
+
+                                        // Scan Inventory for Compatible Big Items
+                                        // Priority: Heart (H) -> Bone (B) -> Cosmic (C) (Just for checking order)
+                                        String ingredientCode = null;
+                                        net.minecraft.world.item.Item ingredientItem = null;
+
+                                        if (!history.contains("H")
+                                                        && hasItemInInventory(player, ModItems.ZOMBIE_HEART.get())) {
+                                                ingredientCode = "H";
+                                                ingredientItem = ModItems.ZOMBIE_HEART.get();
+                                        } else if (!history.contains("B")
+                                                        && hasItemInInventory(player, ModItems.BONE_OF_MAZE.get())) {
+                                                ingredientCode = "B";
+                                                ingredientItem = ModItems.BONE_OF_MAZE.get();
+                                        } else if (!history.contains("C")
+                                                        && hasItemInInventory(player, ModItems.COSMIC_EMERALD.get())) {
+                                                ingredientCode = "C";
+                                                ingredientItem = ModItems.COSMIC_EMERALD.get();
+                                        }
+
+                                        // Execute Infusion
+                                        if (ingredientCode != null && ingredientItem != null) {
+                                                // 1. Consume Big Item
+                                                consumeItemFromInventory(player, ingredientItem, 1);
+
+                                                // 2. Update NBT History
+                                                history.add(ingredientCode);
+                                                applyIngredientHistory(nextPotion, history);
+
+                                                // 3. Replace Item
+                                                heldItem.shrink(1);
+                                                player.addItem(nextPotion);
+
+                                                // 4. Feedback
+                                                player.level().playSound(null, player.blockPosition(),
+                                                                SoundEvents.BREWING_STAND_BREW, SoundSource.PLAYERS,
+                                                                1.0f, 1.0f);
+                                                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                                                "§6[Alchemist]§a Infusion Successful! The potion evolves..."));
+
+                                                event.setCanceled(true);
+                                                event.setCancellationResult(InteractionResult.SUCCESS);
+                                        } else {
+                                                if (heldItem.is(ModItems.ETHERNAL_BOTTLE.get())) {
+                                                        player.sendSystemMessage(net.minecraft.network.chat.Component
+                                                                        .literal("§6[Alchemist]§c I need a powerful catalyst (Heart, Bone, or Cosmic Emerald) to activate this bottle."));
+                                                } else {
+                                                        player.sendSystemMessage(net.minecraft.network.chat.Component
+                                                                        .literal("§6[Alchemist]§c You need a new catalyst (Heart, Bone, or Cosmic Emerald) that hasn't been used yet!"));
+                                                }
+                                                // Don't cancel event to allow normal specific interactions if needed,
+                                                // allows trading GUI to open if no valid infusion
+                                        }
+                                }
+                        }
+                }
+        }
+
+        private static void playExchangeSound(Player player) {
+                player.level().playSound(null, player.blockPosition(), SoundEvents.VILLAGER_WORK_CLERIC,
+                                SoundSource.PLAYERS, 1.0f, 1.0f);
+        }
+
+        // === NBT HELPERS ===
+        private static List<String> getIngredientHistory(ItemStack stack) {
+                List<String> history = new ArrayList<>();
+                if (stack.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
+                        net.minecraft.world.item.component.CustomData customData = stack
+                                        .get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+                        net.minecraft.nbt.CompoundTag tag = customData.copyTag();
+                        if (tag.contains("IngredientHistory")) {
+                                net.minecraft.nbt.ListTag list = tag.getList("IngredientHistory", 8); // 8 = String
+                                for (int i = 0; i < list.size(); i++) {
+                                        history.add(list.getString(i));
+                                }
+                        }
+                }
+                return history;
+        }
+
+        private static void applyIngredientHistory(ItemStack stack, List<String> history) {
+                net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+                net.minecraft.nbt.ListTag listTag = new net.minecraft.nbt.ListTag();
+                for (String s : history) {
+                        listTag.add(net.minecraft.nbt.StringTag.valueOf(s));
+                }
+                tag.put("IngredientHistory", listTag);
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                                net.minecraft.world.item.component.CustomData.of(tag));
+        }
+
+        // === INVENTORY HELPERS ===
+        private static int getInventoryItemCount(Player player, net.minecraft.world.item.Item item) {
+                int count = 0;
+                for (ItemStack stack : player.getInventory().items) {
+                        if (stack.is(item)) {
+                                count += stack.getCount();
+                        }
+                }
+                return count;
+        }
+
+        private static boolean hasItemInInventory(Player player, net.minecraft.world.item.Item item) {
+                for (ItemStack stack : player.getInventory().items) {
+                        if (stack.is(item))
+                                return true;
+                }
+                return false;
+        }
+
+        private static void consumeItemFromInventory(Player player, net.minecraft.world.item.Item item, int count) {
+                int remaining = count;
+                for (ItemStack stack : player.getInventory().items) {
+                        if (stack.is(item)) {
+                                int take = Math.min(stack.getCount(), remaining);
+                                stack.shrink(take);
+                                remaining -= take;
+                                if (remaining <= 0)
+                                        break;
+                        }
+                }
+        }
+
+        @SubscribeEvent
+        public static void onItemTooltip(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent event) {
+                net.minecraft.world.item.ItemStack stack = event.getItemStack();
+                if (stack.isDamageableItem()) {
+                        int max = stack.getMaxDamage();
+                        int current = max - stack.getDamageValue();
+                        // Color based on percentage
+                        net.minecraft.ChatFormatting color = net.minecraft.ChatFormatting.GREEN;
+                        float percent = (float) current / max;
+                        if (percent < 0.5f)
+                                color = net.minecraft.ChatFormatting.YELLOW;
+                        if (percent < 0.2f)
+                                color = net.minecraft.ChatFormatting.RED;
+
+                        event.getToolTip().add(net.minecraft.network.chat.Component
+                                        .literal("Durability: " + current + " / " + max).withStyle(color));
                 }
         }
 }

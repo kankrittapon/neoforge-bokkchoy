@@ -1,6 +1,26 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft:item/potion"
-  }
+    "layer0": "rpgem:item/infinite_potion_tier_1"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "rpgem:variant": 0.1
+      },
+      "model": "rpgem:item/infinite_potion_h"
+    },
+    {
+      "predicate": {
+        "rpgem:variant": 0.2
+      },
+      "model": "rpgem:item/infinite_potion_b"
+    },
+    {
+      "predicate": {
+        "rpgem:variant": 0.3
+      },
+      "model": "rpgem:item/infinite_potion_c"
+    }
+  ]
 }

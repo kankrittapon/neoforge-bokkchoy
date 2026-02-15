@@ -30,7 +30,7 @@ public record PacketUpgradeItem(BlockPos pos) implements CustomPacketPayload {
 
                 BlockEntity blockEntity = level.getBlockEntity(payload.pos);
                 if (blockEntity instanceof AncientForgeBlockEntity forge) {
-                    forge.tryUpgradeItem(level, context.player());
+                    forge.handleForgeAction(level, context.player());
                 }
             }
         });

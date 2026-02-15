@@ -25,6 +25,11 @@ public class ModCreativeTabs {
                         output.accept(ModItems.ETHERNAL_BOTTLE.get());
                         output.accept(ModItems.ZOMBIE_HEART.get());
 
+                        // Support Items
+                        output.accept(ModItems.MEMORY_FRAGMENT.get());
+                        output.accept(ModItems.PROTECTION_STONE.get());
+                        output.accept(ModItems.ARTISANS_MEMORY.get());
+
                         // Upgrade Stones
                         output.accept(ModItems.UPGRADE_STONE_TIER_1.get());
                         output.accept(ModItems.UPGRADE_STONE_TIER_2.get());

@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "rpgem:item/infinite_potion_tier_3"
+    "layer0": "rpgem:item/infinite_potion_white"
   }
 }

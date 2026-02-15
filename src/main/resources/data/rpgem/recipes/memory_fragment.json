@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "rpgem:upgrade_stone_tier_1"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "rpgem:memory_fragment"
+  }
+}

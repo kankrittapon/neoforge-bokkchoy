@@ -31,8 +31,9 @@ public class AncientForgeMenu extends AbstractContainerMenu {
         this.data = data;
 
         if (entity instanceof AncientForgeBlockEntity be) {
-            this.addSlot(new SlotItemHandler(be.itemHandler, 0, 80, 20)); // Equipment Slot
-            this.addSlot(new SlotItemHandler(be.itemHandler, 1, 80, 50)); // Stone Slot
+            this.addSlot(new SlotItemHandler(be.itemHandler, 0, 80, 11)); // Equipment Slot
+            this.addSlot(new SlotItemHandler(be.itemHandler, 1, 80, 59)); // Stone Slot
+            this.addSlot(new SlotItemHandler(be.itemHandler, 2, 134, 59)); // Protection/Support Slot
         }
 
         addDataSlots(data);
@@ -48,7 +49,7 @@ public class AncientForgeMenu extends AbstractContainerMenu {
     private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
-    private static final int TE_INVENTORY_SLOT_COUNT = 2;
+    private static final int TE_INVENTORY_SLOT_COUNT = 3;
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {

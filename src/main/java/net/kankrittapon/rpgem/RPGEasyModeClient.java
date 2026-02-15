@@ -30,6 +30,10 @@ public class RPGEasyModeClient {
         // Some client setup code
         RPGEasyMode.LOGGER.info("HELLO FROM CLIENT SETUP");
         RPGEasyMode.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+
+        event.enqueueWork(() -> {
+            net.kankrittapon.rpgem.client.ModItemProperties.addCustomItemProperties();
+        });
     }
 
     @SubscribeEvent
@@ -51,12 +55,39 @@ public class RPGEasyModeClient {
                         net.minecraft.nbt.ListTag list = tag.getList("IngredientHistory", 8);
                         if (!list.isEmpty()) {
                             String first = list.getString(0);
-                            return switch (first) {
-                                case "H" -> 0xCC3333; // Red (Heart)
-                                case "B" -> 0xF0F0F0; // White (Bone)
-                                case "C" -> 0x33CC33; // Green (Emerald)
-                                default -> -1;
-                            };
+
+                            // Tier 1 Logic
+                            if (list.size() == 1) {
+                                return switch (first) {
+                                    case "H" -> 0xCC3333; // Red
+                                    case "B" -> 0xF0F0F0; // White
+                                    case "C" -> 0x33CC33; // Green
+                                    default -> -1;
+                                };
+                            }
+
+                            // Tier 2 Logic
+                            if (list.size() == 2) {
+                                String second = list.getString(1);
+                                String combo = first + second;
+                                // Check for existence of specific types regardless of order if needed,
+                                // but here we check specific combinations as per ModItemProperties logic
+                                // However, the item logic uses specific combos (HB, HC, BH, BC, etc.)
+                                // But visual request was grouped.
+
+                                if (combo.contains("H") && combo.contains("B"))
+                                    return 0xFF69B4; // Pink (HB/BH)
+                                if (combo.contains("H") && combo.contains("C"))
+                                    return 0xFFFF00; // Yellow (HC/CH)
+                                if (combo.contains("B") && combo.contains("C"))
+                                    return 0x00FFFF; // Cyan (BC/CB)
+                                return -1;
+                            }
+
+                            // Tier 3 Logic
+                            if (list.size() >= 3) {
+                                return 0x800080; // Purple/Cosmic
+                            }
                         }
                     }
                 }

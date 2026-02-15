@@ -18,6 +18,23 @@ public class ModItems {
         public static final DeferredItem<Item> ZOMBIE_HEART = ITEMS.registerSimpleItem("zombie_heart",
                         new Item.Properties());
 
+        // Repair Items
+        public static final DeferredItem<Item> MEMORY_FRAGMENT = ITEMS.registerSimpleItem("memory_fragment",
+                        new Item.Properties());
+        public static final DeferredItem<Item> PROTECTION_STONE = ITEMS.registerSimpleItem("protection_stone",
+                        new Item.Properties());
+        public static final DeferredItem<Item> ARTISANS_MEMORY = ITEMS.registerSimpleItem("artisans_memory",
+                        new Item.Properties());
+
+        // Quest Items (Fragments)
+        public static final DeferredItem<Item> PIECE_OF_HEART = ITEMS.registerSimpleItem("piece_of_heart",
+                        new Item.Properties());
+        public static final DeferredItem<Item> PIECE_OF_BONE = ITEMS.registerSimpleItem("piece_of_bone",
+                        new Item.Properties());
+        public static final DeferredItem<Item> PIECE_OF_COSMIC_EMERALD = ITEMS.registerSimpleItem(
+                        "piece_of_cosmic_emerald",
+                        new Item.Properties());
+
         // Upgrade Stones
         public static final DeferredItem<Item> UPGRADE_STONE_TIER_1 = ITEMS.registerSimpleItem("upgrade_stone_tier_1",
                         new Item.Properties());

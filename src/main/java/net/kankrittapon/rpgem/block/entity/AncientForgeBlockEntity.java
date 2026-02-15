@@ -25,7 +25,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 
 public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider {
-    public final ItemStackHandler itemHandler = new ItemStackHandler(2) {
+    public final ItemStackHandler itemHandler = new ItemStackHandler(3) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -47,7 +47,7 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
 
             @Override
             public int getCount() {
-                return 2;
+                return 0; // No internal data sync needed, handled by Player Capability
             }
         };
     }
@@ -72,7 +72,12 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
+        if (tag.contains("inventory")) {
+            CompoundTag invTag = tag.getCompound("inventory");
+            // Force size to 3 to support new slots (Protection Stone)
+            invTag.putInt("Size", 3);
+            itemHandler.deserializeNBT(registries, invTag);
+        }
     }
 
     @Nullable
@@ -128,9 +133,78 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
                 || stone.is(ModItems.FORGED_STONE_ULTIMATE_DESTRUCTION.get());
     }
 
-    public void tryUpgradeItem(Level level, Player player) {
+    public void handleForgeAction(Level level, Player player) {
+        ItemStack stone = this.itemHandler.getStackInSlot(1);
+        if (stone.is(ModItems.MEMORY_FRAGMENT.get())) {
+            performRepair(level, player);
+        } else {
+            performUpgrade(level, player);
+        }
+    }
+
+    private void performRepair(Level level, Player player) {
+        ItemStack equipment = this.itemHandler.getStackInSlot(0);
+        ItemStack material = this.itemHandler.getStackInSlot(1);
+        ItemStack supportItem = this.itemHandler.getStackInSlot(2);
+
+        if (equipment.isEmpty() || material.isEmpty())
+            return;
+
+        if (!equipment.isDamageableItem()) {
+            player.sendSystemMessage(Component.literal("§cThis item cannot be repaired!"));
+            return;
+        }
+
+        if (equipment.getDamageValue() == 0) {
+            player.sendSystemMessage(Component.literal("§aItem is already at full durability!"));
+            return;
+        }
+
+        int repairAmount = 1;
+        int upgradeLevel = equipment.getOrDefault(ModDataComponents.UPGRADE_LEVEL.get(), 0);
+
+        if (upgradeLevel > 0) {
+            repairAmount = 1;
+        } else {
+            net.minecraft.world.item.Rarity rarity = equipment.getRarity();
+            if (rarity == net.minecraft.world.item.Rarity.COMMON)
+                repairAmount = 10;
+            else if (rarity == net.minecraft.world.item.Rarity.UNCOMMON)
+                repairAmount = 5;
+            else if (rarity == net.minecraft.world.item.Rarity.RARE)
+                repairAmount = 2;
+            else
+                repairAmount = 1;
+        }
+
+        // Artisan's Memory Boost (x5)
+        boolean useArtisan = false;
+        if (!supportItem.isEmpty() && supportItem.is(ModItems.ARTISANS_MEMORY.get())) {
+            repairAmount *= 5;
+            useArtisan = true;
+        }
+
+        // Apply Repair
+        int newDamage = Math.max(0, equipment.getDamageValue() - repairAmount);
+        equipment.setDamageValue(newDamage);
+
+        // Consume Material
+        material.shrink(1);
+        if (useArtisan) {
+            supportItem.shrink(1);
+            player.sendSystemMessage(Component.literal("§6[Artisan's Memory] Repair Boost Activated! (x5)"));
+        }
+
+        // Feedback
+        level.playSound(null, this.getBlockPos(), net.minecraft.sounds.SoundEvents.ANVIL_USE,
+                net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+        player.sendSystemMessage(Component.literal("§aItem repaired! (+" + repairAmount + " Durability)"));
+    }
+
+    private void performUpgrade(Level level, Player player) {
         ItemStack equipment = this.itemHandler.getStackInSlot(0);
         ItemStack stone = this.itemHandler.getStackInSlot(1);
+        ItemStack supportItem = this.itemHandler.getStackInSlot(2);
 
         if (equipment.isEmpty() || stone.isEmpty())
             return;
@@ -150,7 +224,6 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
         else if (stone.is(ModItems.UPGRADE_STONE_TIER_3.get()))
             tier = 3;
         else {
-            // Check Forged Stones
             forgedType = getForgedStoneType(stone);
             if (!forgedType.isEmpty()) {
                 isForgedStone = true;
@@ -163,43 +236,27 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
             return;
         }
 
-        // ===== Weapon/Armor Type Validation for Forged Stones =====
-        if (isForgedStone) {
-            boolean equipIsArmor = isArmor(equipment);
-            boolean equipIsWeapon = isWeapon(equipment);
+        // ===== Durability Validation (New) =====
+        if (equipment.isDamageableItem()) {
+            int maxDamage = equipment.getMaxDamage();
+            int currentDamage = equipment.getDamageValue();
+            int durability = maxDamage - currentDamage;
 
-            if (forgedType.equals("destruction") && !equipIsWeapon) {
-                player.sendSystemMessage(Component.literal("§cForged Stone: Destruction can only be used on weapons!"));
+            // Levels 1-15: Cannot upgrade if Durability <= 20
+            if (currentLevel <= 15 && durability <= 20) {
+                player.sendSystemMessage(Component.literal("§cDurability too low! Repair required (>20)."));
+                player.playNotifySound(net.minecraft.sounds.SoundEvents.ANVIL_HIT,
+                        net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
                 return;
             }
-            if ((forgedType.equals("fortitude") || forgedType.equals("agility")) && !equipIsArmor) {
-                player.sendSystemMessage(Component.literal("§cThis Forged Stone can only be used on armor!"));
+            // Levels 16+: Cannot upgrade if Broken (Durability <= 0)
+            // Note: Minecraft breaks item at durability 0 effectively, but if we have
+            // custom logic keeping it alive:
+            if (currentLevel > 15 && durability <= 0) {
+                player.sendSystemMessage(Component.literal("§cItem is broken! Repair required."));
+                player.playNotifySound(net.minecraft.sounds.SoundEvents.ANVIL_HIT,
+                        net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
                 return;
-            }
-
-            // ===== Armor Path Validation =====
-            if (equipIsArmor) {
-                String currentPath = equipment.getOrDefault(ModDataComponents.ARMOR_PATH.get(), "none");
-
-                if (currentPath.equals("none")) {
-                    // First Forged Stone → set the path
-                    String newPath = forgedType.equals("fortitude") ? "reduction" : "evasion";
-                    equipment.set(ModDataComponents.ARMOR_PATH.get(), newPath);
-                    player.sendSystemMessage(Component.literal(
-                            "§6⚔ Armor path set: "
-                                    + (newPath.equals("reduction") ? "§b🧱 Damage Reduction" : "§a💨 Damage Evasion")));
-                } else {
-                    // Path already set → validate match
-                    String expectedPath = forgedType.equals("fortitude") ? "reduction" : "evasion";
-                    if (!currentPath.equals(expectedPath)) {
-                        player.sendSystemMessage(Component.literal(
-                                "§cThis armor is on the "
-                                        + (currentPath.equals("reduction") ? "🧱 Damage Reduction"
-                                                : "💨 Damage Evasion")
-                                        + " path! Use the matching Forged Stone."));
-                        return;
-                    }
-                }
             }
         }
 
@@ -218,19 +275,32 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
             player.sendSystemMessage(Component.literal("§cItem level too low for Tier 3!"));
             return;
         }
-        if (tier == 3 && currentLevel >= 28) { // Max level
+        if (tier == 3 && currentLevel >= 28) {
             player.sendSystemMessage(Component.literal("§6Item is already at Max Level!"));
             return;
         }
 
-        // ===== RNG Calculation =====
-        double successRate = 0.0;
+        // ===== Fail Stack & Success Rate =====
+        double baseChance = 0.0;
         if (tier == 1)
-            successRate = Config.UPGRADE_SUCCESS_RATE_TIER_1.get();
+            baseChance = Config.UPGRADE_SUCCESS_RATE_TIER_1.get();
         else if (tier == 2)
-            successRate = Config.UPGRADE_SUCCESS_RATE_TIER_2.get();
+            baseChance = Config.UPGRADE_SUCCESS_RATE_TIER_2.get();
         else if (tier == 3)
-            successRate = Config.UPGRADE_SUCCESS_RATE_TIER_3.get();
+            baseChance = Config.UPGRADE_SUCCESS_RATE_TIER_3.get();
+
+        // Get Fail Stack from Player
+        int failStack = player.getData(net.kankrittapon.rpgem.init.ModAttachments.FAIL_STACK);
+        double failStackBonus = failStack * 0.01; // 1% per stack
+        double successRate = baseChance + failStackBonus;
+
+        // Cap success rate at 100%
+        if (successRate > 1.0)
+            successRate = 1.0;
+
+        // Display Probability
+        player.displayClientMessage(Component.literal("§eChance: " + (int) (successRate * 100) + "% (Base: "
+                + (int) (baseChance * 100) + "% + FS: " + failStack + ")"), true);
 
         boolean success = level.random.nextDouble() < successRate;
 
@@ -238,40 +308,143 @@ public class AncientForgeBlockEntity extends BlockEntity implements MenuProvider
         stone.shrink(1);
 
         if (success) {
+            // SUCCESS
             equipment.set(ModDataComponents.UPGRADE_LEVEL.get(), nextLevel);
+            updateItemName(equipment, nextLevel);
+
+            // Validate/Set Armor Path if needed (from original code)
+            if (isForgedStone && isArmor(equipment)) {
+                String currentPath = equipment.getOrDefault(ModDataComponents.ARMOR_PATH.get(), "none");
+                if (currentPath.equals("none")) {
+                    String newPath = forgedType.equals("fortitude") ? "reduction" : "evasion";
+                    equipment.set(ModDataComponents.ARMOR_PATH.get(), newPath);
+                }
+            }
+
+            // Reset Fail Stack
+            player.setData(net.kankrittapon.rpgem.init.ModAttachments.FAIL_STACK, 0);
+
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
+                        new net.kankrittapon.rpgem.network.PacketSyncFailStack(0));
+            }
+
             player.sendSystemMessage(Component.literal(
                     "§a✦ Upgrade Successful! New Level: " + getFormattedLevel(nextLevel)));
             level.playSound(null, this.getBlockPos(), net.minecraft.sounds.SoundEvents.ANVIL_USE,
                     net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
         } else {
-            player.sendSystemMessage(Component.literal("§c✦ Upgrade Failed!"));
+            // FAIL
+            // Increment Fail Stack
+            player.setData(net.kankrittapon.rpgem.init.ModAttachments.FAIL_STACK, failStack + 1);
+
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
+                        new net.kankrittapon.rpgem.network.PacketSyncFailStack(failStack + 1));
+            }
+
+            // Durability Penalty (-10 Durability = +10 Damage)
+            if (equipment.isDamageableItem()) {
+                int newDamage = Math.min(equipment.getMaxDamage(), equipment.getDamageValue() + 10);
+                equipment.setDamageValue(newDamage);
+            }
+
+            // Downgrade Logic (Tier 2/3)
+            if (tier >= 2 || currentLevel >= 15) {
+                boolean hasProtection = !supportItem.isEmpty() && supportItem.is(ModItems.PROTECTION_STONE.get());
+
+                if (hasProtection) {
+                    player.sendSystemMessage(Component.literal("§b[Protection Stone] Item saved from Downgrade!"));
+                    supportItem.shrink(1);
+                } else {
+                    // Downgrade
+                    int downgradedLevel = Math.max(15, currentLevel - 1); // Min +15/PRI
+                    if (downgradedLevel < currentLevel) {
+                        equipment.set(ModDataComponents.UPGRADE_LEVEL.get(), downgradedLevel);
+                        updateItemName(equipment, downgradedLevel);
+                        player.sendSystemMessage(Component.literal(
+                                "§c⚠ Upgrade Failed! Item downgraded to " + getFormattedLevel(downgradedLevel)));
+                    } else {
+                        player.sendSystemMessage(
+                                Component.literal("§c✦ Upgrade Failed! (Fail Stack: " + (failStack + 1) + ")"));
+                    }
+                }
+            } else {
+                player.sendSystemMessage(
+                        Component.literal("§c✦ Upgrade Failed! (Fail Stack: " + (failStack + 1) + ")"));
+            }
+
             level.playSound(null, this.getBlockPos(), net.minecraft.sounds.SoundEvents.ANVIL_BREAK,
                     net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
+        }
+    }
 
-            // Downgrade Logic (Tier 2 & 3 only): 50% chance to lose 1 level
-            if (tier > 1 && level.random.nextBoolean()) {
-                int floorLevel = tier == 2 ? 15 : 25;
-                int newLevel = Math.max(floorLevel, currentLevel - 1);
-                equipment.set(ModDataComponents.UPGRADE_LEVEL.get(), newLevel);
-                player.sendSystemMessage(Component.literal(
-                        "§4Ouch! Item level decreased to: " + getFormattedLevel(newLevel)));
-            }
+    private void updateItemName(ItemStack stack, int upgradeLevel) {
+        // 1. Get/Save Original Name
+        Component originalNameComponent;
+        String originalNameJson;
+
+        if (stack.has(ModDataComponents.ORIGINAL_NAME.get())) {
+            originalNameJson = stack.get(ModDataComponents.ORIGINAL_NAME.get());
+            originalNameComponent = Component.Serializer.fromJson(originalNameJson,
+                    this.level != null ? this.level.registryAccess() : null);
+            if (originalNameComponent == null)
+                originalNameComponent = stack.getHoverName();
+        } else {
+            // First time: Save current name as original
+            originalNameComponent = stack.getHoverName();
+
+            // Serialize and Save
+            net.minecraft.core.RegistryAccess registryAccess = this.level != null ? this.level.registryAccess() : null;
+            originalNameJson = Component.Serializer.toJson(originalNameComponent, registryAccess);
+            stack.set(ModDataComponents.ORIGINAL_NAME.get(), originalNameJson);
+        }
+
+        // 2. Get Prefix
+        String prefix = getUpgradePrefix(upgradeLevel);
+
+        // 3. Set Name
+        if (!prefix.isEmpty()) {
+            Component newName = Component.literal(prefix + ": ").append(originalNameComponent);
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, newName);
+        }
+    }
+
+    private String getUpgradePrefix(int level) {
+        if (level <= 0)
+            return "";
+        if (level <= 15)
+            return "§7[+" + level + "]"; // Gray/White
+
+        // PRI - DEC (16 - 25)
+        switch (level) {
+            case 16:
+                return "§a[PRI]"; // Green
+            case 17:
+                return "§b[DUO]"; // Blue
+            case 18:
+                return "§e[TRI]"; // Yellow
+            case 19:
+                return "§6[TET]"; // Gold
+            case 20:
+                return "§c[PEN]"; // Red (Orange-ish in MC code usually handled by Gold/Red mix, using Red here)
+            case 21:
+                return "§4[HEX]"; // Dark Red
+            case 22:
+                return "§5[SEP]"; // Dark Purple
+            case 23:
+                return "§d[OCT]"; // Light Purple
+            case 24:
+                return "§9[NOV]"; // Blueish Purple (Indigo)
+            case 25:
+                return "§5§k[DEC]"; // Obfuscated/Rainbow (Magic?) - Using Dark Purple + Magic for now
+            default:
+                return "§5[Ultimate]"; // > 25
         }
     }
 
     private String getFormattedLevel(int level) {
-        if (level <= 15)
-            return "+" + level;
-        if (level <= 25)
-            return romanWithOffset(level - 15);
-        return "Ultimate " + (level - 25);
-    }
-
-    private String romanWithOffset(int val) {
-        String[] romans = { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
-        if (val > 0 && val <= 10)
-            return romans[val - 1];
-        return String.valueOf(val);
+        return getUpgradePrefix(level);
     }
 
 }

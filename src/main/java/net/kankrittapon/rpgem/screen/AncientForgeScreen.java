@@ -11,12 +11,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class AncientForgeScreen extends AbstractContainerScreen<AncientForgeMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(RPGEasyMode.MODID,
-            "textures/gui/alchemy_table.png"); // Placeholder for now
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft",
+            "textures/gui/container/dispenser.png"); // Placeholder to prevent missing texture warning
 
     public AncientForgeScreen(AncientForgeMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
     }
+
+    private net.minecraft.client.gui.components.Button upgradeButton;
 
     @Override
     protected void init() {
@@ -24,11 +26,21 @@ public class AncientForgeScreen extends AbstractContainerScreen<AncientForgeMenu
         this.titleLabelX = 10000; // Hide default title
         this.inventoryLabelX = 10000; // Hide default inventory title
 
-        this.addRenderableWidget(
+        this.upgradeButton = this.addRenderableWidget(
                 net.minecraft.client.gui.components.Button.builder(Component.literal("Upgrade"), button -> {
                     net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                             new net.kankrittapon.rpgem.network.PacketUpgradeItem(this.menu.blockEntity.getBlockPos()));
                 }).bounds(leftPos + 60, topPos + 75, 56, 20).build());
+    }
+
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        if (this.menu.getSlot(1).getItem().is(net.kankrittapon.rpgem.init.ModItems.MEMORY_FRAGMENT.get())) {
+            this.upgradeButton.setMessage(Component.literal("Repair"));
+        } else {
+            this.upgradeButton.setMessage(Component.literal("Upgrade"));
+        }
     }
 
     @Override
@@ -47,5 +59,22 @@ public class AncientForgeScreen extends AbstractContainerScreen<AncientForgeMenu
         renderBackground(guiGraphics, mouseX, mouseY, delta);
         super.render(guiGraphics, mouseX, mouseY, delta);
         renderTooltip(guiGraphics, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int pMouseX, int pMouseY) {
+        // Mode
+        boolean isRepair = this.menu.getSlot(1).getItem()
+                .is(net.kankrittapon.rpgem.init.ModItems.MEMORY_FRAGMENT.get());
+        String modeText = isRepair ? "REPAIR" : "UPGRADE";
+        int modeColor = isRepair ? 0x55FF55 : 0xFFAA00; // Green for Repair, Gold for Upgrade
+        guiGraphics.drawString(this.font, modeText, 8, 20, modeColor, false);
+
+        // Fail Stack
+        int failStack = 0;
+        if (this.minecraft != null && this.minecraft.player != null) {
+            failStack = this.minecraft.player.getData(net.kankrittapon.rpgem.init.ModAttachments.FAIL_STACK);
+        }
+        guiGraphics.drawString(this.font, "FS: " + failStack, 28, 63, 0xFF5555, false);
     }
 }

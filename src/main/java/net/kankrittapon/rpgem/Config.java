@@ -75,6 +75,33 @@ public class Config {
                         .defineInRange("fateSealThreshold", 0.15, 0.0, 1.0);
 
         // ==========================================
+        // Infinite Potion Drop Rates
+        // ==========================================
+        public static final ModConfigSpec.DoubleValue ZOMBIE_KING_HEART_CHANCE = BUILDER
+                        .comment("Chance for Zombie King to drop Zombie Heart (Big Item). Default: 0.125%")
+                        .defineInRange("zombieKingHeartChance", 0.00125, 0.0, 1.0);
+
+        public static final ModConfigSpec.DoubleValue ZOMBIE_HEART_CHANCE = BUILDER
+                        .comment("Chance for Zombie to drop Zombie Heart (Big Item). Default: 0.05%")
+                        .defineInRange("zombieHeartChance", 0.0005, 0.0, 1.0);
+
+        public static final ModConfigSpec.DoubleValue SKELETON_LORD_BONE_CHANCE = BUILDER
+                        .comment("Chance for Skeleton Lord to drop Bone of Maze (Big Item). Default: 0.125%")
+                        .defineInRange("skeletonLordBoneChance", 0.00125, 0.0, 1.0);
+
+        public static final ModConfigSpec.DoubleValue SKELETON_BONE_CHANCE = BUILDER
+                        .comment("Chance for Skeleton to drop Bone of Maze (Big Item). Default: 0.05%")
+                        .defineInRange("skeletonBoneChance", 0.0005, 0.0, 1.0);
+
+        public static final ModConfigSpec.DoubleValue WARDEN_COSMIC_CHANCE = BUILDER
+                        .comment("Chance for Warden to drop Cosmic Emerald (Big Item). Default: 0.125%")
+                        .defineInRange("wardenCosmicChance", 0.00125, 0.0, 1.0);
+
+        public static final ModConfigSpec.DoubleValue MOB_COSMIC_CHANCE = BUILDER
+                        .comment("Chance for Enderman/Witch to drop Cosmic Emerald (Big Item). Default: 0.05%")
+                        .defineInRange("mobCosmicChance", 0.0005, 0.0, 1.0);
+
+        // ==========================================
         // Integration Settings (Mod Compatibility)
         // ==========================================
         public static final ModConfigSpec.BooleanValue ENABLE_APOTHEOSIS_INTEGRATION = BUILDER

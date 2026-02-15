@@ -83,6 +83,12 @@ public class ModAttributes {
                                         0.0, 0.0, 1.0)
                                         .setSyncable(true));
 
+        /** Reflect Chance: โอกาสสะท้อนดาเมจ % (0.0 ~ 1.0) */
+        public static final Holder<Attribute> REFLECT_CHANCE = ATTRIBUTES.register("reflect_chance",
+                        () -> new RangedAttribute("attribute." + RPGEasyMode.MODID + ".reflect_chance",
+                                        0.0, 0.0, 1.0)
+                                        .setSyncable(true));
+
         public static void register(IEventBus eventBus) {
                 ATTRIBUTES.register(eventBus);
         }

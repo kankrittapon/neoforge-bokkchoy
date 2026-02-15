@@ -25,6 +25,18 @@ public class ModMobEffects {
                                                                         RPGEasyMode.MODID,
                                                                         "grace_seal_resist"),
                                                         1.0,
+                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE)
+                                        .addAttributeModifier(ModAttributes.EVASION,
+                                                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                                                        RPGEasyMode.MODID,
+                                                                        "grace_evasion"),
+                                                        0.8,
+                                                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE)
+                                        .addAttributeModifier(ModAttributes.REFLECT_CHANCE,
+                                                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                                                        RPGEasyMode.MODID,
+                                                                        "grace_reflect_chance"),
+                                                        0.8,
                                                         net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE)); // Gold
                                                                                                                                           // Color
 
