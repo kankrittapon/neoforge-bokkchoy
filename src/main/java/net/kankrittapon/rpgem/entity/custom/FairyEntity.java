@@ -598,4 +598,20 @@ public class FairyEntity extends PathfinderMob implements GeoEntity, MenuProvide
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.cache;
     }
+
+    public enum Skill {
+        CHEER,
+        CARE,
+        FEATHERY_STEPS,
+        TEAR,
+        BREATH,
+        WELL,
+        MORNING_STAR
+    }
+
+    public boolean hasSkill(Skill skill) {
+        // TODO: Implement actual learning logic (NBT/Level-based)
+        // For now, return true to allow testing GUI buttons
+        return true;
+    }
 }

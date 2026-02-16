@@ -27,6 +27,7 @@ public record PacketFairyAction(int actionType) implements CustomPacketPayload {
     public static final int ACTION_REVIVE = 4; // Not used yet? Tear?
     public static final int ACTION_UNSUMMON = 5;
     public static final int ACTION_CHANGE_SKILL = 6;
+    public static final int ACTION_SETUP_POTION = 7;
 
     @Override
     public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
@@ -60,8 +61,18 @@ public record PacketFairyAction(int actionType) implements CustomPacketPayload {
                     final java.util.concurrent.atomic.AtomicReference<ItemStack> itemRef = new java.util.concurrent.atomic.AtomicReference<>(
                             ItemStack.EMPTY);
                     top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(serverPlayer).ifPresent(handler -> {
-                        handler.findFirstCurio(ModItems.FAIRY_WING.get())
-                                .ifPresent(slotResult -> itemRef.set(slotResult.stack()));
+                        // Manual search since findFirstCurio is problematic
+                        var curios = handler.getCurios();
+                        for (var entry : curios.entrySet()) {
+                            var stacksHandler = entry.getValue();
+                            var itemHandler = stacksHandler.getStacks();
+                            for (int i = 0; i < itemHandler.getSlots(); i++) {
+                                if (itemHandler.getStackInSlot(i).getItem() == ModItems.FAIRY_WING.get()) {
+                                    itemRef.set(itemHandler.getStackInSlot(i));
+                                    return;
+                                }
+                            }
+                        }
                     });
                     if (itemRef.get().isEmpty()) {
                         // Check Inventory
@@ -80,7 +91,7 @@ public record PacketFairyAction(int actionType) implements CustomPacketPayload {
                 }
 
                 // 2. Perform Action
-                switch (message.actionType) {
+                switch (message.actionType()) {
                     case ACTION_SPROUT:
                         handleSprout(serverPlayer, foundFairy, foundItem);
                         break;

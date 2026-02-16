@@ -50,9 +50,21 @@ public record PacketOpenFairyGUI() implements CustomPacketPayload {
                             net.minecraft.world.item.ItemStack.EMPTY);
 
                     // Check Curios first
-                    top.theillusivec4.curios.api.CuriosApi.getCuriosHelper()
-                            .findFirstCurio(serverPlayer, net.kankrittapon.rpgem.init.ModItems.FAIRY_WING.get())
-                            .ifPresent(slotResult -> fairyStack.set(slotResult.stack()));
+                    // Check Curios first
+                    top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(serverPlayer).ifPresent(handler -> {
+                        var curios = handler.getCurios();
+                        for (var entry : curios.entrySet()) {
+                            var stacksHandler = entry.getValue();
+                            var itemHandler = stacksHandler.getStacks();
+                            for (int i = 0; i < itemHandler.getSlots(); i++) {
+                                if (itemHandler.getStackInSlot(i)
+                                        .getItem() == net.kankrittapon.rpgem.init.ModItems.FAIRY_WING.get()) {
+                                    fairyStack.set(itemHandler.getStackInSlot(i));
+                                    return;
+                                }
+                            }
+                        }
+                    });
 
                     // Fallback to Main Inventory if not found in Curios (optional as per design,
                     // but good UX)
