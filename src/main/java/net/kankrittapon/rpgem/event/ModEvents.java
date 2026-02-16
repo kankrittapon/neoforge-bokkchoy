@@ -477,6 +477,44 @@ public class ModEvents {
                                                 1, 0.3, 0.1, 0.3, 0.02);
                         }
                 }
+
+                // === INVENTORY WEIGHT SYSTEM & FAIRY SKILL 4.3 ===
+                if (player.level().getGameTime() % 20 == 0) { // Check every second
+                        net.kankrittapon.rpgem.util.WeightHandler.tick(player);
+                        int penalty = net.kankrittapon.rpgem.util.WeightHandler.getPenaltyLevel(player);
+                        if (penalty > 0) {
+                                if (penalty >= 3) {
+                                        // Immobile
+                                        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 10,
+                                                        false, false, true));
+                                        player.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 128, false, false,
+                                                        true)); // Prevent Jump
+                                        player.displayClientMessage(net.minecraft.network.chat.Component
+                                                        .translatable("message.rpgem.weight_overburdened")
+                                                        .withStyle(net.minecraft.ChatFormatting.RED), true);
+                                } else if (penalty >= 2) {
+                                        // Heavy Load (No Jump, Slow)
+                                        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 4,
+                                                        false, false, true)); // Slowness V
+                                        player.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 128, false, false,
+                                                        true)); // Prevent Jump
+                                        player.displayClientMessage(
+                                                        net.minecraft.network.chat.Component
+                                                                        .translatable("message.rpgem.weight_heavy")
+                                                                        .withStyle(net.minecraft.ChatFormatting.GOLD),
+                                                        true);
+                                } else {
+                                        // Overweight (Slow)
+                                        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1,
+                                                        false, false, true)); // Slowness II
+                                        player.displayClientMessage(
+                                                        net.minecraft.network.chat.Component
+                                                                        .translatable("message.rpgem.weight_encumbered")
+                                                                        .withStyle(net.minecraft.ChatFormatting.YELLOW),
+                                                        true);
+                                }
+                        }
+                }
         }
 
         @SubscribeEvent
@@ -486,6 +524,23 @@ public class ModEvents {
                 }
 
                 if (event.getEntity() instanceof Player player) {
+                        // 1. FAIRY RESURRECTION (Skill 4.4)
+                        if (!event.isCanceled()) {
+                                java.util.List<net.kankrittapon.rpgem.entity.custom.FairyEntity> fairies = player
+                                                .level().getEntitiesOfClass(
+                                                                net.kankrittapon.rpgem.entity.custom.FairyEntity.class,
+                                                                player.getBoundingBox().inflate(10.0),
+                                                                f -> f.getOwnerUUID().isPresent() && f.getOwnerUUID()
+                                                                                .get().equals(player.getUUID()));
+
+                                if (!fairies.isEmpty()) {
+                                        if (fairies.get(0).tryUseFairyTear(player)) {
+                                                event.setCanceled(true);
+                                                return; // Successfully Resurrected by Fairy
+                                        }
+                                }
+                        }
+
                         if (player.hasEffect(ModMobEffects.BOUNDLESS_GRACE)) {
                                 // Prevent Death
                                 event.setCanceled(true);

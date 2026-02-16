@@ -1,5 +1,6 @@
 package net.kankrittapon.rpgem.compat.jade;
 
+/*
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
@@ -33,3 +34,6 @@ public enum AlchemyTableProvider implements IBlockComponentProvider {
         return ResourceLocation.fromNamespaceAndPath(RPGEasyMode.MODID, "alchemy_table");
     }
 }
+*/
+public class AlchemyTableProvider {
+} // Placeholder

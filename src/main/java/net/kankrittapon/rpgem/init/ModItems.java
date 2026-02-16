@@ -1,6 +1,7 @@
 package net.kankrittapon.rpgem.init;
 
 import net.kankrittapon.rpgem.RPGEasyMode;
+import net.kankrittapon.rpgem.item.custom.FairyWingItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -17,6 +18,8 @@ public class ModItems {
                         new Item.Properties());
         public static final DeferredItem<Item> ZOMBIE_HEART = ITEMS.registerSimpleItem("zombie_heart",
                         new Item.Properties());
+        public static final DeferredItem<FairyWingItem> FAIRY_WING = ITEMS.register("fairy_wing",
+                        () -> new FairyWingItem(new Item.Properties().stacksTo(1)));
 
         // Repair Items
         public static final DeferredItem<Item> MEMORY_FRAGMENT = ITEMS.registerSimpleItem("memory_fragment",

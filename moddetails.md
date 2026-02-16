@@ -390,6 +390,33 @@ Chance = BaseChance + (MobLevel * LevelMultiplier) + (LootingLevel * LootingMult
 
 ---
 
+## 4.8 🧚 Familia System (ระบบภูติ/นางฟ้าคู่หู) 🚧
+
+> **Concept:** Entity บินตามผู้เล่น ช่วยเหลือด้วย Passive Skills และ Auto-Consumables (อ้างอิง BDO)
+
+### 📊 Tiers & Evolution
+
+- **4 Tiers:** Faint (1) → Glimmering (2) → Brilliant (3) → Radiant (4)
+- **Sprouting:** เมื่อเลเวลเต็มสามารถ "เลื่อนขั้น" ได้ (มีโอกาสล้มเหลว)
+- **Reset:** หากล้มเหลวต้องใช้ไอเทมรีเซ็ต หรือปั้นตัวใหม่
+
+### ✨ Skills (สุ่มตาม Tier)
+
+1.  **Gift (โชคลาภ):** +1 Luck (ติดตัวเสมอ)
+2.  **Morning Star:** แสงสว่างรอบตัว (Dynamic Light)
+3.  **Feathery Steps:** ลดผลกระทบน้ำหนักเกิน (กัน Slow)
+4.  **Fairy's Tear:** ชุบชีวิตอัตโนมัติเมื่อตาย (Cooldown นาน)
+5.  **Miraculous Cheer:** **Auto-Potion** (HP/MP) เมื่อต่ำกว่า % ที่กำหนด
+6.  **Inexhaustible Well:** ลบ Debuff อัตโนมัติ
+7.  **Continuous Care:** **Auto-Use Items** (Buffs/Food)
+
+### 🎒 Interaction
+
+- **Leveling:** ให้อุปกรณ์ (Weapons/Armor) หรือ "Sweet Honey Wine" เพื่อเพิ่ม XP
+- **Communication:** มีหน้าต่าง GUI จัดการ/ตั้งค่าสกิล
+
+---
+
 ## 5. 🧟 Mobs (มอนสเตอร์พิเศษ)
 
 ### 👑 Zombie King (ราชาซอมบี้)
@@ -533,6 +560,9 @@ Chance = BaseChance + (MobLevel * LevelMultiplier) + (LootingLevel * LootingMult
 | **GUI: Ancient Forge**     | ปรับปรุง GUI Texture ให้สวยงาม                      | มีอยู่แล้วแต่อาจต้องปรับปรุง                                               |
 | **GUI: Alchemy Table**     | ปรับปรุง GUI Texture ให้สวยงาม                      | มีอยู่แล้วแต่อาจต้องปรับปรุง                                               |
 | **Effect Icons (5 ตัว)**   | `textures/mob_effect/*.png`                         | Icon สำหรับ Boundless Grace, Juggernaut, Iron Thorns, Evasion, Unstoppable |
+| **Fairy GUI**              | `textures/gui/container/fairy_gui.png`              | หน้าต่าง GUI ของ Fairy System                                              |
+| **Fairy Items (4 ชิ้น)**   | `textures/item/*.png`                               | Sweet Honey Wine, Laila's Petal, Sealed Wings, Theiah's Orb                |
+| **Fairy Skins (4 Tiers)**  | `textures/entity/fairy/tier_*.png`                  | Skin สำหรับ Tier 1-4 (Faint, Glimmering, Brilliant, Radiant)               |
 
 ---
 

@@ -1,5 +1,7 @@
 package net.kankrittapon.rpgem;
 
+import net.kankrittapon.rpgem.client.renderer.entity.FairyRenderer;
+import net.kankrittapon.rpgem.init.ModEntities;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -34,14 +36,6 @@ public class RPGEasyModeClient {
         event.enqueueWork(() -> {
             net.kankrittapon.rpgem.client.ModItemProperties.addCustomItemProperties();
         });
-    }
-
-    @SubscribeEvent
-    public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
-        event.register(net.kankrittapon.rpgem.init.ModMenuTypes.ALCHEMY_TABLE_MENU.get(),
-                net.kankrittapon.rpgem.screen.AlchemyTableScreen::new);
-        event.register(net.kankrittapon.rpgem.init.ModMenuTypes.ANCIENT_FORGE_MENU.get(),
-                net.kankrittapon.rpgem.screen.AncientForgeScreen::new);
     }
 
     @SubscribeEvent
@@ -102,9 +96,10 @@ public class RPGEasyModeClient {
     @SubscribeEvent
     public static void registerEntityRenderers(
             net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(net.kankrittapon.rpgem.init.ModEntities.ZOMBIE_KING.get(),
+        event.registerEntityRenderer(ModEntities.ZOMBIE_KING.get(),
                 net.minecraft.client.renderer.entity.ZombieRenderer::new);
-        event.registerEntityRenderer(net.kankrittapon.rpgem.init.ModEntities.SKELETON_LORD.get(),
+        event.registerEntityRenderer(ModEntities.SKELETON_LORD.get(),
                 net.minecraft.client.renderer.entity.SkeletonRenderer::new);
+        event.registerEntityRenderer(ModEntities.FAIRY.get(), context -> new FairyRenderer(context));
     }
 }

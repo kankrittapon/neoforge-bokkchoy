@@ -17,9 +17,10 @@ version = mod_version
 group = mod_group_id
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    flatDir {
+        dir 'libs'
+    }
     maven {
-        // JEI
         name = "BlameJared"
         url = "https://maven.blamejared.com/"
     }
@@ -31,11 +32,12 @@ repositories {
         }
     }
     maven {
-        // Modrinth Maven
-        url = "https://maven.modrinth.com"
-        content {
-            includeGroup "com.modrinth"
-        }
+        name = "GeckoLib"
+        url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+    }
+    maven {
+        name = "IllusiveC4"
+        url = "https://maven.theillusivec4.top/"
     }
 }
 
@@ -120,6 +122,13 @@ dependencies {
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
+
+    // GeckoLib
+    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:4.7"
+
+    // Curios API
+    runtimeOnly "top.theillusivec4.curios:curios-neoforge:9.4.0+1.21.1"
+    compileOnly "top.theillusivec4.curios:curios-neoforge:9.4.0+1.21.1:api"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

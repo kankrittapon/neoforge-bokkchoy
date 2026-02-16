@@ -1,5 +1,6 @@
 package net.kankrittapon.rpgem.compat.jade;
 
+/*
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
@@ -34,3 +35,6 @@ public enum AncientForgeProvider implements IBlockComponentProvider {
         return ResourceLocation.fromNamespaceAndPath(RPGEasyMode.MODID, "ancient_forge");
     }
 }
+*/
+public class AncientForgeProvider {
+} // Placeholder to avoid file not found if referenced elsewhere

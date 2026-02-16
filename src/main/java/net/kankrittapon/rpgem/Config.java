@@ -116,5 +116,24 @@ public class Config {
                         .comment("Enable balancing logic for L2 Complements (Evasion/Seal Resist). Default: true")
                         .define("enableL2ComplementsBalancing", true);
 
+        // ==========================================
+        // Inventory Weight System Settings
+        // ==========================================
+        public static final ModConfigSpec.DoubleValue WEIGHT_LIMIT_BASE = BUILDER
+                        .comment("Base weight limit for players. Default: 100.0")
+                        .defineInRange("weightLimitBase", 100.0, 1.0, 10000.0);
+
+        public static final ModConfigSpec.DoubleValue WEIGHT_PENALTY_1_THRESHOLD = BUILDER
+                        .comment("Threshold for usage penalty Level 1 (Slowness). Default: 1.0 (100% of Max Weight)")
+                        .defineInRange("weightPenalty1Threshold", 1.0, 0.0, 10.0);
+
+        public static final ModConfigSpec.DoubleValue WEIGHT_PENALTY_2_THRESHOLD = BUILDER
+                        .comment("Threshold for usage penalty Level 2 (No Jump/High Slowness). Default: 1.5 (150% of Max Weight)")
+                        .defineInRange("weightPenalty2Threshold", 1.5, 0.0, 10.0);
+
+        public static final ModConfigSpec.DoubleValue WEIGHT_PENALTY_3_THRESHOLD = BUILDER
+                        .comment("Threshold for usage penalty Level 3 (Immobile). Default: 2.0 (200% of Max Weight)")
+                        .defineInRange("weightPenalty3Threshold", 2.0, 0.0, 10.0);
+
         static final ModConfigSpec SPEC = BUILDER.build();
 }

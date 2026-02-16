@@ -1,5 +1,6 @@
 package net.kankrittapon.rpgem.compat.jade;
 
+/*
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
@@ -21,3 +22,6 @@ public class JadeRPGEasyModePlugin implements IWailaPlugin {
         // Common registration if needed
     }
 }
+*/
+public class JadeRPGEasyModePlugin {
+} // Placeholder
