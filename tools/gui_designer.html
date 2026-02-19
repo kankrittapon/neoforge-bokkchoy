@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Visual GUI Designer</title>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --bg: #121212;
+            --panel: #1e1e1e;
+            --text: #ffffff;
+            --accent: #f40057;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Panel */
+        #sidebar {
+            width: 320px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            overflow-y: scroll;
+            /* Force scroll */
+            height: 100vh;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        #sidebar h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        #sidebar h2 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #888;
+            margin: 10px 0 10px 0;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Grid Overlay */
+        #grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image:
+                linear-gradient(to right, rgba(0, 255, 242, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 255, 242, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
+            /* 5px Minecraft = 10px Designer Scale */
+            display: none;
+            z-index: 50;
+        }
+
+        /* Layer Panel */
+        #layers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 8px;
+            background: #1a1a20;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-radius: 3px;
+        }
+
+        .layer-item:hover {
+            background: #2a2a30;
+        }
+
+        .layer-item.selected {
+            border-color: var(--primary);
+            background: rgba(0, 255, 242, 0.1);
+        }
+
+        .layer-item .visibility {
+            opacity: 0.5;
+            color: var(--primary);
+        }
+
+        .layer-item .label {
+            flex: 1;
+        }
+
+        .layer-item .type-badge {
+            font-size: 8px;
+            padding: 2px 4px;
+            background: #333;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Elements */
+        h1 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        h2 {
+            font-size: 0.9rem;
+            margin: 15px 0 10px;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .btn {
+            background: #222;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            width: 100%;
+            text-align: left;
+        }
+
+        .btn:hover {
+            background: #333;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn.primary {
+            background: linear-gradient(45deg, var(--primary), #0088ff);
+            color: black;
+            font-weight: bold;
+            border: none;
+            text-align: center;
+        }
+
+        .btn.secondary {
+            border-color: var(--secondary);
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .btn.secondary:hover {
+            background: rgba(255, 0, 255, 0.1);
+        }
+
+        .btn.active {
+            background: var(--primary);
+            color: black;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        input {
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 10px;
+            width: 100%;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        #canvas-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #000;
+            padding: 50px;
+            overflow: auto;
+            /* Allow canvas scrolling if image is huge */
+        }
+
+        /* Zoom Control */
+        #canvas-container {
+            width: 512px;
+            height: 512px;
+            background: #111;
+            border: 1px solid var(--border);
+            position: relative;
+            transform-origin: top left;
+            /* Critical for zoom */
+            transition: transform 0.1s ease-out;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        #bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            image-rendering: pixelated;
+        }
+
+        .gui-element {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 0, 0.5);
+            background: rgba(255, 255, 0, 0.1);
+            cursor: move;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: yellow;
+            text-shadow: 1px 1px 0 black;
+            user-select: none;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+
+        .gui-element.selected {
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            z-index: 100;
+        }
+
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 10px;
+            height: 10px;
+            background: white;
+            cursor: nwse-resize;
+            z-index: 101;
+            box-shadow: -1px -1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .type-slot {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+        }
+
+        .type-button {
+            border-color: #00fff2;
+            background: rgba(0, 255, 242, 0.1);
+            color: #00fff2;
+        }
+
+        .type-bar {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+        }
+
+        #coords-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--primary);
+            pointer-events: none;
+            border: 1px solid var(--border);
+        }
+
+        textarea#export-output {
+            width: 100%;
+            height: 80px;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            border: 1px solid var(--border);
+            margin-top: 10px;
+            resize: none;
+            padding: 5px;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .flex-row>* {
+            flex: 1;
+        }
+
+        #properties-panel {
+            transition: opacity 0.3s;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+        <h1>AG GUI Designer</h1>
+
+        <div>
+            <h2>Create</h2>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <button class="btn" onclick="addElement('slot')">+ Add Slot (18x18)</button>
+                <button class="btn" onclick="addElement('button')">+ Add Button</button>
+                <button class="btn" onclick="addElement('bar')">+ Add Bar / Custom</button>
+            </div>
+        </div>
+
+        <div id="project-settings">
+            <h2>Project & View</h2>
+            <div class="control-group">
+                <label>GUI Name</label>
+                <input type="text" id="gui-name" value="fairy_gui" onchange="updateExport()">
+            </div>
+
+            <div class="flex-row" style="gap: 5px; margin-bottom: 10px;">
+                <button class="btn primary" onclick="downloadProject()" style="flex:1; text-align:center;">Save
+                    (.json)</button>
+                <button class="btn secondary" onclick="document.getElementById('json-import').click()"
+                    style="flex:1; text-align:center;">Load (.json)</button>
+                <input type="file" id="json-import" accept=".json" style="display:none;" onchange="importProject(this)">
+            </div>
+
+            <div class="flex-row" style="align-items: center; margin-bottom: 15px;">
+                <label style="margin:0; flex:1; cursor:pointer;"><input type="checkbox" id="grid-toggle"
+                        onchange="toggleGrid()" style="width:auto; margin-right:5px;"> Show Grid</label>
+                <label style="margin:0; flex:1; color: #888; text-align: right;">Scale: <span
+                        id="zoom-value">1.0</span>x</label>
+            </div>
+            <div class="control-group">
+                <input type="range" id="zoom-slider" min="0.5" max="4.0" step="0.1" value="1.0" oninput="updateZoom()">
+            </div>
+
+            <div class="control-group">
+                <label>Import Texture (PNG)</label>
+                <input type="file" id="image-upload" accept="image/*" class="btn">
+            </div>
+
+            <div class="flex-row">
+                <div class="control-group">
+                    <label>BG X</label>
+                    <input type="number" id="bg-x" value="0" oninput="updateBG()">
+                </div>
+                <div class="control-group">
+                    <label>BG Y</label>
+                    <input type="number" id="bg-y" value="0" oninput="updateBG()">
+                </div>
+            </div>
+            <div class="flex-row">
+                <div class="control-group">
+                    <label>BG Width</label>
+                    <input type="number" id="bg-w" value="256" oninput="updateBG()">
+                </div>
+                <div class="control-group">
+                    <label>BG Height</label>
+                    <input type="number" id="bg-h" value="256" oninput="updateBG()">
+                </div>
+            </div>
+            <button class="btn secondary" onclick="fitBGToCanvas()" style="margin-bottom: 5px;">Fit BG to
+                Canvas</button>
+
+            <div class="flex-row">
+                <div class="control-group">
+                    <label>Canvas W</label>
+                    <input type="number" id="canvas-w" value="256" oninput="updateCanvasSize()">
+                </div>
+                <div class="control-group">
+                    <label>Canvas H</label>
+                    <input type="number" id="canvas-h" value="256" oninput="updateCanvasSize()">
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2>Layers</h2>
+            <div id="layers-list">
+                <!-- Layers will be populated here -->
+            </div>
+        </div>
+
+        <div id="properties-panel" style="opacity: 0.3; pointer-events: none;">
+            <h2>Properties</h2>
+            <div class="control-group">
+                <label>Label</label>
+                <input type="text" id="prop-label" oninput="updateSelected()">
+            </div>
+            <div class="flex-row">
+                <div class="control-group">
+                    <label>X (px)</label>
+                    <input type="number" id="prop-x" oninput="updateSelected()">
+                </div>
+                <div class="control-group">
+                    <label>Y (px)</label>
+                    <input type="number" id="prop-y" oninput="updateSelected()">
+                </div>
+            </div>
+            <div class="flex-row">
+                <div class="control-group">
+                    <label>W (px)</label>
+                    <input type="number" id="prop-w" oninput="updateSelected()">
+                </div>
+                <div class="control-group">
+                    <label>H (px)</label>
+                    <input type="number" id="prop-h" oninput="updateSelected()">
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Color Swatch</label>
+                <div class="flex-row" style="align-items: center;">
+                    <input type="color" id="prop-color" oninput="updateSelected()"
+                        style="height: 34px; width: 60px; padding: 2px;">
+                    <button class="btn" id="eyedropper-btn" onclick="toggleEyedropper()">Pick (E)</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Rotation: <span id="prop-rot-val">0</span>°</label>
+                <input type="range" id="prop-rot" min="0" max="360" step="1" value="0" oninput="updateSelected()">
+            </div>
+
+            <button class="btn secondary" onclick="deleteSelected()"
+                style="margin-top: 10px; color: #ff4444; border-color: #ff4444;">Delete Element (Del)</button>
+        </div>
+
+        <div id="export-panel" style="margin-top: auto;">
+            <h2>Export</h2>
+            <div class="control-group">
+                <div class="flex-row" style="margin-bottom: 5px;">
+                    <button class="btn primary" onclick="copyJava()">Java (Copy)</button>
+                    <button class="btn secondary" onclick="downloadFile('java')">Java (.java)</button>
+                </div>
+                <div class="flex-row" style="margin-bottom: 5px;">
+                    <button class="btn" onclick="copyPython()">Python (Copy)</button>
+                    <button class="btn secondary" onclick="downloadFile('py')">Python (.py)</button>
+                </div>
+                <div class="flex-row">
+                    <button class="btn" onclick="downloadFile('json')">Export JSON (.json)</button>
+                </div>
+            </div>
+            <textarea id="export-output" readonly></textarea>
+            <div style="font-size: 9px; color: #666; margin-top: 10px; line-height: 1.4;">
+                Shortcuts:<br>
+                Arrows = Move (Shift=5px)<br>
+                Del = Delete | E = Eyedropper
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-wrapper">
+        <div id="canvas-container">
+            <canvas id="hidden-canvas" style="display:none;"></canvas>
+            <img id="bg-image" draggable="false">
+            <!-- Elements will be added here -->
+        </div>
+        <div id="coords-info">Mouse: 0, 0</div>
+    </div>
+
+    <script>
+        const container = document.getElementById('canvas-container');
+        const bgImage = document.getElementById('bg-image');
+        const coordsInfo = document.getElementById('coords-info');
+        const propPanel = document.getElementById('properties-panel');
+        const exportOutput = document.getElementById('export-output');
+        const layersList = document.getElementById('layers-list');
+        const hiddenCanvas = document.getElementById('hidden-canvas');
+        const ctx = hiddenCanvas.getContext('2d');
+
+        // --- State ---
+        let elements = [];
+        let selectedElement = null;
+        let isDragging = false, isResizing = false, isDraggingBG = false, isEyedropperActive = false;
+        let startX, startY, startLeft, startTop, startWidth, startHeight;
+        let bgX = 0, bgY = 0, bgW = 256, bgH = 256;
+        let startBGX = 0, startBGY = 0;
+
+        let zoomLevel = 1.0;
+        let history = [];
+        let historyIndex = -1;
+        let clipboard = null;
+
+        // --- Core Functions ---
+
+        function saveHistory() {
+            // Trim forward history if we made a new change
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(JSON.stringify(elements)); // Save snapshot
+            if (history.length > 50) history.shift(); // Limit to 50 steps
+            historyIndex = history.length - 1;
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                elements = JSON.parse(history[historyIndex]);
+                refreshCanvas();
+                updateExport();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                elements = JSON.parse(history[historyIndex]);
+                refreshCanvas();
+                updateExport();
+            }
+        }
+
+        function refreshCanvas() {
+            // Clear current DOM elements (except BG and Grid)
+            const elDom = document.querySelectorAll('.gui-element');
+            elDom.forEach(el => el.remove());
+
+            elements.forEach(data => {
+                const el = document.createElement('div');
+                el.className = `gui-element type-${data.type}`;
+                el.id = data.id;
+                el.dataset.id = data.id;
+
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                el.appendChild(handle);
+
+                container.appendChild(el);
+                updateElementDOM(data.id);
+                setupElementEvents(el, handle);
+            });
+
+            updateLayersUI();
+            if (selectedElement) {
+                const stillExists = elements.find(e => e.id === selectedElement.dataset.id);
+                if (stillExists) selectElement(document.getElementById(stillExists.id));
+                else deselect();
+            }
+        }
+
+        function addElement(type) {
+            const id = 'el_layer_' + Date.now();
+            const data = {
+                id: id,
+                type: type,
+                label: type.charAt(0).toUpperCase() + elements.length,
+                x: 10, y: 10,
+                w: type === 'slot' ? 18 : 40,
+                h: type === 'slot' ? 18 : 20,
+                color: type === 'slot' ? '#ffd700' : (type === 'button' ? '#00fff2' : '#00ff00'),
+                visible: true
+            };
+
+            elements.push(data);
+            refreshCanvas();
+            selectElement(document.getElementById(id));
+            saveHistory();
+            updateExport();
+        }
+
+        function setupElementEvents(el, handle) {
+            el.addEventListener('mousedown', (e) => {
+                if (e.target === handle) return;
+                if (isEyedropperActive) return;
+
+                selectElement(el);
+                isDragging = true;
+                startX = e.clientX; startY = e.clientY;
+                const data = elements.find(d => d.id === el.dataset.id);
+                startLeft = data.x; startTop = data.y;
+                e.preventDefault(); e.stopPropagation();
+            });
+
+            handle.addEventListener('mousedown', (e) => {
+                selectElement(el);
+                isResizing = true;
+                startX = e.clientX; startY = e.clientY;
+                const data = elements.find(d => d.id === el.dataset.id);
+                startWidth = data.w; startHeight = data.h;
+                e.preventDefault(); e.stopPropagation();
+            });
+        }
+
+        function selectElement(el) {
+            if (selectedElement) selectedElement.classList.remove('selected');
+            selectedElement = el;
+            if (el) {
+                el.classList.add('selected');
+                propPanel.style.opacity = '1';
+                propPanel.style.pointerEvents = 'all';
+                syncProps();
+            }
+            updateLayersUI();
+        }
+
+        function deselect() {
+            if (selectedElement) selectedElement.classList.remove('selected');
+            selectedElement = null;
+            propPanel.style.opacity = '0.3';
+            propPanel.style.pointerEvents = 'none';
+            updateLayersUI();
+        }
+
+        function updateElementDOM(id) {
+            const data = elements.find(d => d.id === id);
+            const el = document.getElementById(id);
+            if (!el || !data) return;
+            el.style.left = (data.x * 2) + 'px';
+            el.style.top = (data.y * 2) + 'px';
+            el.style.width = (data.w * 2) + 'px';
+            el.style.height = (data.h * 2) + 'px';
+            el.style.borderColor = data.color;
+            el.style.color = data.color;
+            el.style.background = hexToRgba(data.color, 0.2);
+            el.innerText = data.label;
+            el.style.display = data.visible ? 'flex' : 'none';
+        }
+
+        function hexToRgba(hex, alpha) {
+            let r = parseInt(hex.slice(1, 3), 16),
+                g = parseInt(hex.slice(3, 5), 16),
+                b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function updateLayersUI() {
+            layersList.innerHTML = '';
+            // Reverse order to show top layer first
+            [...elements].reverse().forEach(data => {
+                const item = document.createElement('div');
+                item.className = 'layer-item' + (selectedElement?.dataset.id === data.id ? ' selected' : '');
+
+                item.innerHTML = `
+                    <span class="visibility" onclick="toggleVisibility('${data.id}', event)">${data.visible ? '👁️' : '🕶️'}</span>
+                    <span class="label">${data.label}</span>
+                    <span class="type-badge">${data.type}</span>
+                `;
+
+                item.onclick = () => selectElement(document.getElementById(data.id));
+                layersList.appendChild(item);
+            });
+        }
+
+        function toggleVisibility(id, e) {
+            e.stopPropagation();
+            const data = elements.find(d => d.id === id);
+            data.visible = !data.visible;
+            updateElementDOM(id);
+            updateLayersUI();
+            saveHistory();
+        }
+
+        function syncProps() {
+            if (!selectedElement) return;
+            const data = elements.find(d => d.id === selectedElement.dataset.id);
+            document.getElementById('prop-label').value = data.label;
+            document.getElementById('prop-x').value = data.x;
+            document.getElementById('prop-y').value = data.y;
+            document.getElementById('prop-w').value = data.w;
+            document.getElementById('prop-h').value = data.h;
+            document.getElementById('prop-color').value = data.color;
+            document.getElementById('prop-rot').value = data.rotation;
+            document.getElementById('prop-rot-val').innerText = data.rotation;
+        }
+
+        function updateSelected() {
+            if (!selectedElement) return;
+            const data = elements.find(d => d.id === selectedElement.dataset.id);
+            data.label = document.getElementById('prop-label').value;
+            data.x = parseInt(document.getElementById('prop-x').value) || 0;
+            data.y = parseInt(document.getElementById('prop-y').value) || 0;
+            data.w = parseInt(document.getElementById('prop-w').value) || 1;
+            data.h = parseInt(document.getElementById('prop-h').value) || 1;
+            data.color = document.getElementById('prop-color').value;
+            data.rotation = parseInt(document.getElementById('prop-rot').value) || 0;
+
+            updateElementDOM(data.id);
+            updateLayersUI();
+            updateExport();
+        }
+
+        function updateExport() {
+            const guiName = document.getElementById('gui-name').value || 'fairy_gui';
+            const data = {
+                gui: guiName,
+                canvas: { w: parseInt(container.style.width) / 2, h: parseInt(container.style.height) / 2 },
+                bg: { x: bgX, y: bgY, w: bgW, h: bgH },
+                elements: elements.map(el => ({
+                    id: el.id,
+                    type: el.type,
+                    label: el.label,
+                    x: el.x, y: el.y,
+                    w: el.w, h: el.h,
+                    rotation: el.rotation,
+                    color: el.color
+                }))
+            };
+            exportOutput.value = JSON.stringify(data, null, 2);
+        }
+
+        function downloadProject() {
+            const name = document.getElementById('gui-name').value || 'gui_project';
+            const project = {
+                v: "2.0",
+                name: name,
+                elements: elements,
+                bg: { x: bgX, y: bgY, w: bgW, h: bgH, src: bgImage.src }
+            };
+            const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importProject(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const project = JSON.parse(e.target.result);
+                    if (project.elements) {
+                        elements = project.elements;
+                        document.getElementById('gui-name').value = project.name || 'imported_gui';
+                        if (project.bg) {
+                            bgX = project.bg.x || 0; bgY = project.bg.y || 0;
+                            bgW = project.bg.w || 256; bgH = project.bg.h || 256;
+                            bgImage.src = project.bg.src || '';
+                            updateBGControls();
+                            updateBG();
+                        }
+                        refreshCanvas();
+                        saveHistory();
+                        updateExport();
+                        alert("Project Loaded Successfully!");
+                    }
+                } catch (err) { alert("Invalid JSON Project file"); }
+            };
+            reader.readAsText(file);
+            input.value = ''; // Reset for next import
+        }
+
+        function deleteSelected() {
+            if (!selectedElement) return;
+            const id = selectedElement.dataset.id;
+            elements = elements.filter(d => d.id !== id);
+            selectedElement.remove();
+            deselect();
+            saveHistory();
+            updateExport();
+        }
+
+        // --- Shortcuts & Lifecycle ---
+
+        window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            // Simple Undo
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault(); undo();
+            }
+            // Simple Redo
+            if (e.ctrlKey && e.key === 'y') {
+                e.preventDefault(); redo();
+            }
+
+            // Clipboard
+            if (e.ctrlKey && e.key === 'c' && selectedElement) {
+                clipboard = JSON.stringify(elements.find(el => el.id === selectedElement.dataset.id));
+            }
+            if (e.ctrlKey && e.key === 'x' && selectedElement) {
+                clipboard = JSON.stringify(elements.find(el => el.id === selectedElement.dataset.id));
+                deleteSelected();
+            }
+            if (e.ctrlKey && e.key === 'v' && clipboard) {
+                const data = JSON.parse(clipboard);
+                data.id = 'el_copy_' + Date.now();
+                data.label += '_copy';
+                data.x += 10; data.y += 10;
+                elements.push(data);
+                refreshCanvas();
+                selectElement(document.getElementById(data.id));
+                saveHistory();
+                updateExport();
+            }
+
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                deleteSelected();
+            } else if (e.key === 'e' || e.key === 'E') {
+                toggleEyedropper();
+            } else if (selectedElement) {
+                const data = elements.find(d => d.id === selectedElement.dataset.id);
+                const step = e.shiftKey ? 5 : 1;
+                if (e.key.startsWith('Arrow')) {
+                    if (e.key === 'ArrowLeft') data.x -= step;
+                    else if (e.key === 'ArrowRight') data.x += step;
+                    else if (e.key === 'ArrowUp') data.y -= step;
+                    else if (e.key === 'ArrowDown') data.y += step;
+                    updateElementDOM(data.id);
+                    syncProps();
+                    updateExport();
+                }
+            }
+        });
+
+        // Mouse Events for Canvas
+        container.addEventListener('mousedown', (e) => {
+            if (isEyedropperActive) { pickColor(e); return; }
+            if (e.target === container || e.target === bgImage) {
+                deselect();
+                isDraggingBG = true;
+                startX = e.clientX; startY = e.clientY;
+                startBGX = bgX; startBGY = bgY;
+                e.preventDefault();
+            }
+        });
+
+        // Initialize state
+        container.style.width = '512px';
+        container.style.height = '512px';
+        saveHistory();
+
+        window.addEventListener('mousemove', (e) => {
+            const rect = container.getBoundingClientRect();
+            // Important: rect already accounts for zoom due to getBoundingClientRect
+            // We divide by (2 * zoomLevel) to get Minecraft Pixels
+            const mx = Math.floor((e.clientX - rect.left) / (2 * zoomLevel));
+            const my = Math.floor((e.clientY - rect.top) / (2 * zoomLevel));
+
+            if (mx >= 0 && mx <= (parseInt(container.style.width) / 2) && my >= 0 && my <= (parseInt(container.style.height) / 2)) {
+                coordsInfo.innerText = `Mouse: ${mx}, ${my} (Px) | Zoom: ${zoomLevel.toFixed(1)}x`;
+            }
+
+            if (isDraggingBG) {
+                bgX = startBGX + Math.round((e.clientX - startX) / (2 * zoomLevel));
+                bgY = startBGY + Math.round((e.clientY - startY) / (2 * zoomLevel));
+                updateBGControls();
+                updateBG();
+                return;
+            }
+
+            if (!selectedElement) return;
+            const data = elements.find(d => d.id === selectedElement.dataset.id);
+
+            if (isDragging) {
+                data.x = startLeft + Math.round((e.clientX - startX) / (2 * zoomLevel));
+                data.y = startTop + Math.round((e.clientY - startY) / (2 * zoomLevel));
+                updateElementDOM(data.id);
+                syncProps();
+            } else if (isResizing) {
+                data.w = Math.max(1, startWidth + Math.round((e.clientX - startX) / (2 * zoomLevel)));
+                data.h = Math.max(1, startHeight + Math.round((e.clientY - startY) / (2 * zoomLevel)));
+                updateElementDOM(data.id);
+                syncProps();
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isDragging || isResizing || isDraggingBG) {
+                saveHistory();
+                updateExport();
+            }
+            isDragging = isResizing = isDraggingBG = false;
+        });
+
+        // --- Sub-Systems ---
+
+        function updateZoom() {
+            zoomLevel = parseFloat(document.getElementById('zoom-slider').value);
+            document.getElementById('zoom-value').innerText = zoomLevel.toFixed(1);
+            container.style.transform = `scale(${zoomLevel})`;
+        }
+
+        function toggleGrid() {
+            const grid = document.getElementById('grid-overlay');
+            grid.style.display = document.getElementById('grid-toggle').checked ? 'block' : 'none';
+        }
+
+        function updateCanvasSize() {
+            const w = parseInt(document.getElementById('canvas-w').value) || 256;
+            const h = parseInt(document.getElementById('canvas-h').value) || 256;
+            container.style.width = (w * 2) + 'px';
+            container.style.height = (h * 2) + 'px';
+        }
+
+        function updateBG() {
+            bgX = parseInt(document.getElementById('bg-x').value) || 0;
+            bgY = parseInt(document.getElementById('bg-y').value) || 0;
+            bgW = parseInt(document.getElementById('bg-w').value) || 256;
+            bgH = parseInt(document.getElementById('bg-h').value) || 256;
+            bgImage.style.left = (bgX * 2) + 'px';
+            bgImage.style.top = (bgY * 2) + 'px';
+            bgImage.style.width = (bgW * 2) + 'px';
+            bgImage.style.height = (bgH * 2) + 'px';
+        }
+
+        function updateBGControls() {
+            document.getElementById('bg-x').value = bgX;
+            document.getElementById('bg-y').value = bgY;
+            document.getElementById('bg-w').value = bgW;
+            document.getElementById('bg-h').value = bgH;
+        }
+
+        function fitBGToCanvas() {
+            bgX = 0; bgY = 0; bgW = 256; bgH = 256;
+            updateBGControls(); updateBG();
+            saveHistory(); updateExport();
+        }
+
+        function toggleEyedropper() {
+            isEyedropperActive = !isEyedropperActive;
+            const btn = document.getElementById('eyedropper-btn');
+            btn.innerText = isEyedropperActive ? 'Picking...' : 'Pick (E)';
+            btn.classList.toggle('active', isEyedropperActive);
+            if (isEyedropperActive) {
+                hiddenCanvas.width = bgImage.naturalWidth || 256;
+                hiddenCanvas.height = bgImage.naturalHeight || 256;
+                ctx.drawImage(bgImage, 0, 0);
+            }
+        }
+
+        function pickColor(e) {
+            if (!selectedElement) return;
+            const rect = bgImage.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) / (rect.width / bgImage.naturalWidth);
+            const mouseY = (e.clientY - rect.top) / (rect.height / bgImage.naturalHeight);
+            try {
+                const pixel = ctx.getImageData(Math.floor(mouseX), Math.floor(mouseY), 1, 1).data;
+                const hex = "#" + ("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6);
+                const data = elements.find(d => d.id === selectedElement.dataset.id);
+                data.color = hex;
+                updateElementDOM(data.id); syncProps(); saveHistory(); updateExport();
+            } catch (e) { }
+            toggleEyedropper();
+        }
+
+        document.getElementById('image-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { bgImage.src = ev.target.result; fitBGToCanvas(); };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- Export ---
+        function getJavaCode() {
+            const name = document.getElementById('gui-name').value;
+            let code = `// GUI Constants for ${name}\n`;
+            elements.forEach(el => {
+                const lab = el.label.toUpperCase().replace(/\s+/g, '_');
+                code += `public static final int ${lab}_X = ${el.x};\n`;
+                code += `public static final int ${lab}_Y = ${el.y};\n`;
+                code += `public static final int ${lab}_W = ${el.w};\n`;
+                code += `public static final int ${lab}_H = ${el.h};\n`;
+                code += `public static final int ${lab}_ROT = ${el.rotation};\n`;
+                code += "\n";
+            });
+            return code;
+        }
+
+        function getPythonCode() {
+            const name = document.getElementById('gui-name').value;
+            let py = `"${name}": {\n    "elements": [`;
+            elements.forEach(el => {
+                py += `\n        {"label": "${el.label}", "type": "${el.type}", "pos": (${el.x}, ${el.y}), "size": (${el.w}, ${el.h}), "rot": ${el.rotation}},`;
+            });
+            py += `\n    ]\n}`;
+            return py;
+        }
+
+        function copyJava() {
+            navigator.clipboard.writeText(getJavaCode()).then(() => alert("Java Copied!"));
+        }
+
+        function copyPython() {
+            navigator.clipboard.writeText(getPythonCode()).then(() => alert("Python Copied!"));
+        }
+
+        function downloadFile(ext) {
+            const name = document.getElementById('gui-name').value || 'gui_export';
+            let content = '';
+            let filename = `${name}.${ext}`;
+            let mime = 'text/plain';
+
+            if (ext === 'java') {
+                content = getJavaCode();
+            } else if (ext === 'py') {
+                content = getPythonCode();
+            } else if (ext === 'json') {
+                content = exportOutput.value;
+                mime = 'application/json';
+            }
+
+            const blob = new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize grid element
+        const gridOverlay = document.createElement('div');
+        gridOverlay.id = 'grid-overlay';
+        container.appendChild(gridOverlay);
+        saveHistory();
+    </script>
+</body>
+
+
+</html>

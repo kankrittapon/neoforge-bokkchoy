@@ -11,13 +11,22 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class AlchemyTableScreen extends AbstractContainerScreen<AlchemyTableMenu> {
-    // Temporary: Use Dispenser texture to avoid purple checkerboard until custom
-    // asset is ready
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft",
             "textures/gui/container/dispenser.png");
 
+    // --- GUI POSITIONS ---
+    private static final int BG_WIDTH = 176;
+    private static final int BG_HEIGHT = 166;
+
+    private static final int ARROW_X = 85;
+    private static final int ARROW_Y = 30;
+    private static final int ARROW_WIDTH = 8;
+    private static final int ARROW_HEIGHT = 26; // Final height when 100%
+
     public AlchemyTableScreen(AlchemyTableMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        this.imageWidth = BG_WIDTH;
+        this.imageHeight = BG_HEIGHT;
     }
 
     @Override
@@ -42,7 +51,7 @@ public class AlchemyTableScreen extends AbstractContainerScreen<AlchemyTableMenu
 
     private void renderProgressArrow(GuiGraphics guiGraphics, int x, int y) {
         if (menu.isCrafting()) {
-            guiGraphics.blit(TEXTURE, x + 85, y + 30, 176, 0, 8, menu.getScaledProgress());
+            guiGraphics.blit(TEXTURE, x + ARROW_X, y + ARROW_Y, 176, 0, ARROW_WIDTH, menu.getScaledProgress());
         }
     }
 

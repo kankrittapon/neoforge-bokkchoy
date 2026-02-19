@@ -9,6 +9,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record PacketOpenFairyGUI() implements CustomPacketPayload {
+    public PacketOpenFairyGUI() {
+    }
+
     public static final CustomPacketPayload.Type<PacketOpenFairyGUI> TYPE = new CustomPacketPayload.Type<>(
             ResourceLocation.fromNamespaceAndPath(RPGEasyMode.MODID, "open_fairy_gui"));
 
@@ -87,9 +90,9 @@ public record PacketOpenFairyGUI() implements CustomPacketPayload {
                                 .copyTag();
 
                         if (!tag.contains("Inventory")) {
-                            // Initialize empty inventory if missing, to prevent crashes in Menu
+                            // Initialize empty inventory if missing
                             net.neoforged.neoforge.items.ItemStackHandler tempHandler = new net.neoforged.neoforge.items.ItemStackHandler(
-                                    6);
+                                    13);
                             tag.put("Inventory", tempHandler.serializeNBT(serverPlayer.registryAccess()));
                         }
 
@@ -99,7 +102,7 @@ public record PacketOpenFairyGUI() implements CustomPacketPayload {
                         serverPlayer.openMenu(new net.minecraft.world.SimpleMenuProvider(
                                 (id, inv, p) -> {
                                     net.kankrittapon.rpgem.menu.FairyMenu menu = new net.kankrittapon.rpgem.menu.FairyMenu(
-                                            id, inv, new net.neoforged.neoforge.items.ItemStackHandler(6),
+                                            id, inv, new net.neoforged.neoforge.items.ItemStackHandler(13),
                                             net.kankrittapon.rpgem.entity.custom.FairyEntity.createDummy(p.level(),
                                                     finalTag));
                                     menu.boundItem = finalStack;

@@ -1,0 +1,169 @@
+{
+  "gui": "fairy_gui",
+  "canvas": {
+    "w": 256,
+    "h": 256
+  },
+  "bg": {
+    "x": 0,
+    "y": 0,
+    "w": 256,
+    "h": 256
+  },
+  "elements": [
+    {
+      "id": "el_layer_1771254661085",
+      "type": "bar",
+      "label": "B0",
+      "x": 37,
+      "y": 68,
+      "w": 13,
+      "h": 105,
+      "rotation": 180,
+      "color": "#00ff00"
+    },
+    {
+      "id": "el_layer_1771254711229",
+      "type": "bar",
+      "label": "B1",
+      "x": 63,
+      "y": 59,
+      "w": 12,
+      "h": 115,
+      "rotation": 180,
+      "color": "#00ff00"
+    },
+    {
+      "id": "el_layer_1771254747589",
+      "type": "button",
+      "label": "B2",
+      "x": 10,
+      "y": 70,
+      "w": 10,
+      "h": 113,
+      "rotation": 180,
+      "color": "#00fff2"
+    },
+    {
+      "id": "el_layer_1771254789469",
+      "type": "button",
+      "label": "B3",
+      "x": 61,
+      "y": 238,
+      "w": 50,
+      "h": 10,
+      "rotation": 180,
+      "color": "#00fff2"
+    },
+    {
+      "id": "el_layer_1771254833645",
+      "type": "button",
+      "label": "B4",
+      "x": 150,
+      "y": 238,
+      "w": 50,
+      "h": 10,
+      "rotation": 180,
+      "color": "#00fff2"
+    },
+    {
+      "id": "el_layer_1771254876749",
+      "type": "slot",
+      "label": "S5",
+      "x": 140,
+      "y": 46,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771254901797",
+      "type": "slot",
+      "label": "S6",
+      "x": 189,
+      "y": 73,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771254911325",
+      "type": "slot",
+      "label": "S7",
+      "x": 189,
+      "y": 106,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771254923797",
+      "type": "slot",
+      "label": "S8",
+      "x": 189,
+      "y": 139,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771254982037",
+      "type": "slot",
+      "label": "S9",
+      "x": 65,
+      "y": 198,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771254996797",
+      "type": "slot",
+      "label": "S10",
+      "x": 99,
+      "y": 198,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771255019709",
+      "type": "slot",
+      "label": "S11",
+      "x": 135,
+      "y": 198,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771255056405",
+      "type": "slot",
+      "label": "S12",
+      "x": 170,
+      "y": 198,
+      "w": 21,
+      "h": 21,
+      "rotation": 180,
+      "color": "#ffd700"
+    },
+    {
+      "id": "el_layer_1771255084821",
+      "type": "button",
+      "label": "B13",
+      "x": 119,
+      "y": 234,
+      "w": 18,
+      "h": 18,
+      "rotation": 90,
+      "color": "#00fff2"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 package net.kankrittapon.rpgem.menu;
 
 import net.kankrittapon.rpgem.init.ModMenuTypes;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,13 +16,13 @@ public class FairyMenu extends AbstractContainerMenu {
 
     public final net.kankrittapon.rpgem.entity.custom.FairyEntity fairy;
 
-    public FairyMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
-        this(containerId, inv, new ItemStackHandler(6),
+    public FairyMenu(int containerId, Inventory inv, RegistryFriendlyByteBuf extraData) {
+        this(containerId, inv, new ItemStackHandler(13),
                 createEntityFromPacket(inv.player.level(), extraData));
     }
 
     private static net.kankrittapon.rpgem.entity.custom.FairyEntity createEntityFromPacket(
-            net.minecraft.world.level.Level level, FriendlyByteBuf data) {
+            net.minecraft.world.level.Level level, RegistryFriendlyByteBuf data) {
         int entityId = data.readInt();
         if (entityId == -1) {
             // Item Mode: Create Dummy Entity
@@ -46,20 +46,27 @@ public class FairyMenu extends AbstractContainerMenu {
             checkContainerSize(inv, 6);
         }
 
-        // Slot 0: HP Potion (Center-Right in GUI)
-        // Adjusted relative to guiLeft/Top. Let's assume placement around x=140, y=80
-        // based on flow
-        this.addSlot(new SlotItemHandler(handler, 0, 150, 90));
+        // Fairy Inventory Slots (S5-S12)
+        // S5: SKILL 1
+        this.addSlot(new SlotItemHandler(handler, 0, 140, 46));
+        // S6: HP Potion
+        this.addSlot(new SlotItemHandler(handler, 1, 189, 73));
+        // S7: MP Potion
+        this.addSlot(new SlotItemHandler(handler, 2, 189, 106));
+        // S8: Special Menu ($8)
+        this.addSlot(new SlotItemHandler(handler, 3, 189, 139));
+        // S9: SKILL 2
+        this.addSlot(new SlotItemHandler(handler, 4, 65, 198));
+        // S10: SKILL 3
+        this.addSlot(new SlotItemHandler(handler, 5, 99, 198));
+        // S11: SKILL 4
+        this.addSlot(new SlotItemHandler(handler, 6, 135, 198));
+        // S12: SKILL 5
+        this.addSlot(new SlotItemHandler(handler, 7, 170, 198));
 
-        // Slot 1: MP Potion (Next to HP)
-        this.addSlot(new SlotItemHandler(handler, 1, 170, 90));
-
-        // Slot 2: Growth/Sprout Input
-        this.addSlot(new SlotItemHandler(handler, 2, 200, 70));
-
-        // Slots 3-5: Hide
-        for (int i = 0; i < 3; i++) {
-            this.addSlot(new SlotItemHandler(handler, 3 + i, -1000, -1000));
+        // Remaining Slots (Hidden/Reserved)
+        for (int i = 8; i < 13; i++) {
+            this.addSlot(new SlotItemHandler(handler, i, -1000, -1000));
         }
 
         addPlayerInventory(inv);
@@ -68,7 +75,7 @@ public class FairyMenu extends AbstractContainerMenu {
 
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + 36;
-    private static final int TE_INVENTORY_SLOT_COUNT = 6;
+    private static final int TE_INVENTORY_SLOT_COUNT = 13;
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {

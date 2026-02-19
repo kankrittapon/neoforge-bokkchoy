@@ -12,10 +12,26 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class AncientForgeScreen extends AbstractContainerScreen<AncientForgeMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft",
-            "textures/gui/container/dispenser.png"); // Placeholder to prevent missing texture warning
+            "textures/gui/container/dispenser.png");
+
+    // --- GUI POSITIONS ---
+    private static final int BG_WIDTH = 176;
+    private static final int BG_HEIGHT = 166;
+
+    private static final int BUTTON_UPGRADE_X = 60;
+    private static final int BUTTON_UPGRADE_Y = 75;
+    private static final int BUTTON_UPGRADE_W = 56;
+    private static final int BUTTON_UPGRADE_H = 20;
+
+    private static final int TEXT_MODE_X = 8;
+    private static final int TEXT_MODE_Y = 20;
+    private static final int TEXT_FS_X = 28;
+    private static final int TEXT_FS_Y = 63;
 
     public AncientForgeScreen(AncientForgeMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        this.imageWidth = BG_WIDTH;
+        this.imageHeight = BG_HEIGHT;
     }
 
     private net.minecraft.client.gui.components.Button upgradeButton;
@@ -23,14 +39,15 @@ public class AncientForgeScreen extends AbstractContainerScreen<AncientForgeMenu
     @Override
     protected void init() {
         super.init();
-        this.titleLabelX = 10000; // Hide default title
-        this.inventoryLabelX = 10000; // Hide default inventory title
+        this.titleLabelX = 10000;
+        this.inventoryLabelX = 10000;
 
         this.upgradeButton = this.addRenderableWidget(
                 net.minecraft.client.gui.components.Button.builder(Component.literal("Upgrade"), button -> {
                     net.neoforged.neoforge.network.PacketDistributor.sendToServer(
                             new net.kankrittapon.rpgem.network.PacketUpgradeItem(this.menu.blockEntity.getBlockPos()));
-                }).bounds(leftPos + 60, topPos + 75, 56, 20).build());
+                }).bounds(leftPos + BUTTON_UPGRADE_X, topPos + BUTTON_UPGRADE_Y, BUTTON_UPGRADE_W, BUTTON_UPGRADE_H)
+                        .build());
     }
 
     @Override
@@ -67,14 +84,14 @@ public class AncientForgeScreen extends AbstractContainerScreen<AncientForgeMenu
         boolean isRepair = this.menu.getSlot(1).getItem()
                 .is(net.kankrittapon.rpgem.init.ModItems.MEMORY_FRAGMENT.get());
         String modeText = isRepair ? "REPAIR" : "UPGRADE";
-        int modeColor = isRepair ? 0x55FF55 : 0xFFAA00; // Green for Repair, Gold for Upgrade
-        guiGraphics.drawString(this.font, modeText, 8, 20, modeColor, false);
+        int modeColor = isRepair ? 0x55FF55 : 0xFFAA00;
+        guiGraphics.drawString(this.font, modeText, TEXT_MODE_X, TEXT_MODE_Y, modeColor, false);
 
         // Fail Stack
         int failStack = 0;
         if (this.minecraft != null && this.minecraft.player != null) {
             failStack = this.minecraft.player.getData(net.kankrittapon.rpgem.init.ModAttachments.FAIL_STACK);
         }
-        guiGraphics.drawString(this.font, "FS: " + failStack, 28, 63, 0xFF5555, false);
+        guiGraphics.drawString(this.font, "FS: " + failStack, TEXT_FS_X, TEXT_FS_Y, 0xFF5555, false);
     }
 }
